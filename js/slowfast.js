@@ -2,10 +2,10 @@ import React from 'react'
 
 let speeds = [
   { time: 0.0, speed: 1 },
-  // { time: 10.0, speed: 2 },
-  // { time: 20.0, speed: 0.5 },
-  // { time: 30.0, speed: 0.1 },
-  { time: 40.0, speed: 4 },
+  { time: 20.0, speed: 2 },
+  { time: 50.0, speed: 0.5 },
+  { time: 60.0, speed: 0.1 },
+  { time: 65.0, speed: 4 },
   { time: 114.126077, speed: 1 }
 ]
 
@@ -43,21 +43,22 @@ let SlowFast = React.createClass({
     let video = e.target
     let block = this.state.block
 
-    if (video.currentTime >= speeds[block] && block < speeds.length - 1) {
+    if (video.currentTime >= speeds[block + 1].time && block < speeds.length - 1) {
       block++
     }
 
-    let playbackRate = video.playbackRate
     if (block < speeds.length - 1) {
       if (speeds[block + 1].speed > speeds[block].speed) {
         video.playbackRate = Math.tan(Math.atan((speeds[block + 1].speed - speeds[block].speed)/speeds[block + 1].time)) * video.currentTime + speeds[block].speed
       } else {
-        this.video().pause()
+        video.playbackRate = Math.tan(Math.atan((speeds[block].speed - speeds[block + 1].speed)/speeds[block + 1].time)) * (speeds[block + 1].time - video.currentTime) + speeds[block + 1].speed
       }
     }
 
     let progress = video.currentTime / video.duration * 100
     this.setState({ progress: progress, block: block })
+
+    console.log (`block: ${block}, progress: ${progress}, rate: ${video.playbackRate}, cs: ${speeds[block].speed}, ns: ${speeds[block + 1].speed}`)
   },
 
   render() {
