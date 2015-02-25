@@ -3,6 +3,10 @@ import React from 'react'
 let speeds = []
 
 let SlowFast = React.createClass({
+  getInitialState() {
+    return { progress: 0 }
+  },
+
   video() {
     return this.refs.video.getDOMNode()
   },
@@ -15,18 +19,32 @@ let SlowFast = React.createClass({
   },
 
   reset(e) {
-    this.video().fastSeek(0.0);
+    this.video().pause()
+    this.video().currentTime = 0.0
   },
 
   componentDidMount() {
     this.video().addEventListener('play', this.handlePlay)
+    this.video().addEventListener('timeupdate', this.handleTimeUpdate)
   },
 
   handlePlay(e) {
     console.log (e)
   },
 
+  handleTimeUpdate(e) {
+    console.log (e.target.currentTime)
+    console.log (e.target.duration)
+
+    let progress = e.target.currentTime / e.target.duration * 100
+    this.setState({ progress: progress })
+  },
+
   render() {
+    let progressStyle = {
+      width: `${this.state.progress}%`
+    }
+
     return (
       <div>
         <nav className="navbar navbar-default navbar-static-top">
@@ -42,8 +60,15 @@ let SlowFast = React.createClass({
           <div className="row">
             <div className="col-xs-12">
               <video ref="video" src="sample.mp4"/>
+
+              <div className="progress">
+                <div className="progress-bar" style={progressStyle}>
+                  <span className="sr-only">{this.state.progress}% Complete</span>
+                </div>
+              </div>
             </div>
           </div>
+
           
           <div className="row">
             <div className="col-xs-12">
