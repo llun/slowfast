@@ -44,10 +44,17 @@ let SlowFast = React.createClass({
     let panel = d3.select(this.refs.panel.getDOMNode())
     panel.attr('width', width).attr('height', height)
 
-    panel.append('path').attr('d', line(rates)).attr('stroke', 'blue').attr('stroke-width', 1).attr('fill', 'none')
+    panel.append('path').attr('d', line(rates)).attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'none')
     let points = panel.selectAll('circle').data(rates)
-      .enter().append('circle').attr('cx', rate => { return x(rate.time) }).attr('cy', rate => { return y(rate.value) }).attr('r', 6).attr('fill', 'black').exit()
-    
+      .enter()
+        .append('circle')
+          .attr('cx', rate => { return x(rate.time) })
+          .attr('cy', rate => { return y(rate.value) })
+          .attr('r', 6)
+          .attr('fill', 'white')
+          .attr('stroke', 'black')
+          .attr('stroke-width', 2)
+      .exit()
 
   },
 
@@ -80,6 +87,10 @@ let SlowFast = React.createClass({
   render() {
     let progressStyle = {
       width: `${this.state.progress}%`
+    }
+
+    let panelStyle = {
+      overflow: 'visible'
     }
 
     return (
@@ -117,7 +128,7 @@ let SlowFast = React.createClass({
 
           <div className="row">
             <div className="col-xs-12">
-              <svg className="panel" ref="panel"></svg>
+              <svg ref="panel" style={panelStyle}></svg>
             </div>
           </div>
 
