@@ -26,6 +26,7 @@
   "author": "Maythee Anegboonlap <null@llun.in.th>",
   "dependencies": {
     "browserify": "^9.0.3",
+    "d3": "^3.5.5",
     "react": "^0.12.2"
   }
 }

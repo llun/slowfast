@@ -1,12 +1,13 @@
 import React from 'react'
+import d3 from 'd3'
 
-let speeds = [
-  { time: 0.0, speed: 1 },
-  { time: 20.0, speed: 2 },
-  { time: 50.0, speed: 0.5 },
-  { time: 60.0, speed: 0.1 },
-  { time: 65.0, speed: 4 },
-  { time: 114.126077, speed: 1 }
+let rates = [
+  { time: 0.0, rate: 1 },
+  { time: 20.0, rate: 2 },
+  { time: 50.0, rate: 0.5 },
+  { time: 60.0, rate: 0.1 },
+  { time: 65.0, rate: 4 },
+  { time: 114.126077, rate: 1 }
 ]
 
 let SlowFast = React.createClass({
@@ -43,22 +44,22 @@ let SlowFast = React.createClass({
     let video = e.target
     let block = this.state.block
 
-    if (video.currentTime >= speeds[block + 1].time && block < speeds.length - 1) {
+    if (video.currentTime >= rates[block + 1].time && block < rates.length - 1) {
       block++
     }
 
-    if (block < speeds.length - 1) {
-      if (speeds[block + 1].speed > speeds[block].speed) {
-        video.playbackRate = Math.tan(Math.atan((speeds[block + 1].speed - speeds[block].speed)/speeds[block + 1].time)) * video.currentTime + speeds[block].speed
+    if (block < rates.length - 1) {
+      if (rates[block + 1].rate > rates[block].rate) {
+        video.playbackRate = Math.tan(Math.atan((rates[block + 1].rate - rates[block].rate)/rates[block + 1].time)) * video.currentTime + rates[block].rate
       } else {
-        video.playbackRate = Math.tan(Math.atan((speeds[block].speed - speeds[block + 1].speed)/speeds[block + 1].time)) * (speeds[block + 1].time - video.currentTime) + speeds[block + 1].speed
+        video.playbackRate = Math.tan(Math.atan((rates[block].rate - rates[block + 1].rate)/rates[block + 1].time)) * (rates[block + 1].time - video.currentTime) + rates[block + 1].rate
       }
     }
 
     let progress = video.currentTime / video.duration * 100
     this.setState({ progress: progress, block: block })
 
-    console.log (`block: ${block}, progress: ${progress}, rate: ${video.playbackRate}, cs: ${speeds[block].speed}, ns: ${speeds[block + 1].speed}`)
+    console.log (`block: ${block}, progress: ${progress}, rate: ${video.playbackRate}, cs: ${rates[block].rate}, ns: ${rates[block + 1].rate}`)
   },
 
   render() {
@@ -96,7 +97,11 @@ let SlowFast = React.createClass({
               <button className="btn btn-primary" onClick={this.play}>Play</button>
               <button className="btn btn-default" onClick={this.pause}>Pause</button>
               <button className="btn btn-default" onClick={this.reset}>Reset</button>
-              <p>Speed adjustment panel</p>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="col-xs-12" ref="rateAdjustment">
             </div>
           </div>
 
