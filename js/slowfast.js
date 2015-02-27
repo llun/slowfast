@@ -2,12 +2,12 @@ import React from 'react'
 import d3 from 'd3'
 
 let rates = [
-  { time: 0.0, rate: 1 },
-  { time: 20.0, rate: 2 },
-  { time: 50.0, rate: 0.5 },
-  { time: 60.0, rate: 0.1 },
-  { time: 65.0, rate: 4 },
-  { time: 114.126077, rate: 1 }
+  { time: 0.0, value: 1 },
+  { time: 20.0, value: 2 },
+  { time: 50.0, value: 0.5 },
+  { time: 60.0, value: 0.1 },
+  { time: 65.0, value: 4 },
+  { time: 114.126077, value: 1 }
 ]
 
 let SlowFast = React.createClass({
@@ -34,6 +34,21 @@ let SlowFast = React.createClass({
   componentDidMount() {
     this.video().addEventListener('play', this.handlePlay)
     this.video().addEventListener('timeupdate', this.handleTimeUpdate)
+
+    let width = 400
+      , height = 300
+      , x = d3.scale.linear().domain([0, d3.max(rates, rate => { return rate.time })]).range([0, width])
+      , y = d3.scale.linear().domain([0, d3.max(rates, rate => { return rate.value })]).range([height, 0])
+      , line = d3.svg.line().interpolate('cardinal').x(rate => { return x(rate.time) }).y(rate => { return y(rate.value) })
+
+    let panel = d3.select(this.refs.panel.getDOMNode())
+    panel.attr('width', width).attr('height', height)
+
+    panel.append('path').attr('d', line(rates)).attr('stroke', 'blue').attr('stroke-width', 1).attr('fill', 'none')
+    let points = panel.selectAll('circle').data(rates)
+      .enter().append('circle').attr('cx', rate => { return x(rate.time) }).attr('cy', rate => { return y(rate.value) }).attr('r', 6).attr('fill', 'black').exit()
+    
+
   },
 
   handlePlay(e) {
@@ -49,17 +64,17 @@ let SlowFast = React.createClass({
     }
 
     if (block < rates.length - 1) {
-      if (rates[block + 1].rate > rates[block].rate) {
-        video.playbackRate = Math.tan(Math.atan((rates[block + 1].rate - rates[block].rate)/rates[block + 1].time)) * video.currentTime + rates[block].rate
+      if (rates[block + 1].value > rates[block].value) {
+        video.playbackRate = Math.tan(Math.atan((rates[block + 1].value - rates[block].value)/rates[block + 1].time)) * video.currentTime + rates[block].value
       } else {
-        video.playbackRate = Math.tan(Math.atan((rates[block].rate - rates[block + 1].rate)/rates[block + 1].time)) * (rates[block + 1].time - video.currentTime) + rates[block + 1].rate
+        video.playbackRate = Math.tan(Math.atan((rates[block].value - rates[block + 1].value)/rates[block + 1].time)) * (rates[block + 1].time - video.currentTime) + rates[block + 1].value
       }
     }
 
     let progress = video.currentTime / video.duration * 100
     this.setState({ progress: progress, block: block })
 
-    console.log (`block: ${block}, progress: ${progress}, rate: ${video.playbackRate}, cs: ${rates[block].rate}, ns: ${rates[block + 1].rate}`)
+    console.log (`block: ${block}, progress: ${progress}, rate: ${video.playbackRate}, cs: ${rates[block].value}, ns: ${rates[block + 1].value}`)
   },
 
   render() {
@@ -79,7 +94,7 @@ let SlowFast = React.createClass({
 
         <div className="container">
 
-          <div className="row">
+          <div className="row hidden">
             <div className="col-xs-12">
               <video ref="video" src="sample.mp4"/>
 
@@ -101,7 +116,8 @@ let SlowFast = React.createClass({
           </div>
 
           <div className="row">
-            <div className="col-xs-12" ref="rateAdjustment">
+            <div className="col-xs-12">
+              <svg className="panel" ref="panel"></svg>
             </div>
           </div>
 
