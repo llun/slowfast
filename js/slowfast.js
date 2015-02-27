@@ -10,9 +10,13 @@ let rates = [
   { time: 114.126077, value: 1 }
 ]
 
+let bisect = d3.bisector((a, b) => {
+  return a.x - b.x
+}).right
+
 let SlowFast = React.createClass({
   getInitialState() {
-    return { progress: 0, block: 0 }
+    return { progress: 0 }
   },
 
   video() {
@@ -32,11 +36,10 @@ let SlowFast = React.createClass({
   },
 
   componentDidMount() {
-    this.video().addEventListener('play', this.handlePlay)
     this.video().addEventListener('timeupdate', this.handleTimeUpdate)
 
-    let width = 400
-      , height = 300
+    let width = 800
+      , height = 200
       , x = d3.scale.linear().domain([0, d3.max(rates, rate => { return rate.time })]).range([0, width])
       , y = d3.scale.linear().domain([0, d3.max(rates, rate => { return rate.value })]).range([height, 0])
       , line = d3.svg.line().interpolate('cardinal').x(rate => { return x(rate.time) }).y(rate => { return y(rate.value) })
@@ -44,44 +47,41 @@ let SlowFast = React.createClass({
     let panel = d3.select(this.refs.panel.getDOMNode())
     panel.attr('width', width).attr('height', height)
 
-    panel.append('path').attr('d', line(rates)).attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'none')
+    let path = panel.append('path').attr('d', line(rates)).attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'none')
     let points = panel.selectAll('circle').data(rates)
       .enter()
         .append('circle')
           .attr('cx', rate => { return x(rate.time) })
           .attr('cy', rate => { return y(rate.value) })
-          .attr('r', 6)
+          .attr('r', 4)
           .attr('fill', 'white')
           .attr('stroke', 'black')
           .attr('stroke-width', 2)
-      .exit()
 
-  },
+    this.playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
+    this.x = x
+    this.y = y
+    this.path = path
 
-  handlePlay(e) {
-    console.log (e)
+    let node = this.path.node()
+    this.points = []
+    for (let i = 0; i < node.getTotalLength(); i++) {
+      let point = node.getPointAtLength(i)
+      this.points.push(point)
+    }
   },
 
   handleTimeUpdate(e) {
     let video = e.target
-    let block = this.state.block
 
-    if (video.currentTime >= rates[block + 1].time && block < rates.length - 1) {
-      block++
-    }
+    let index = bisect(this.points, { x: this.x(video.currentTime) }, 1)
+    let point = this.points[index]
 
-    if (block < rates.length - 1) {
-      if (rates[block + 1].value > rates[block].value) {
-        video.playbackRate = Math.tan(Math.atan((rates[block + 1].value - rates[block].value)/rates[block + 1].time)) * video.currentTime + rates[block].value
-      } else {
-        video.playbackRate = Math.tan(Math.atan((rates[block].value - rates[block + 1].value)/rates[block + 1].time)) * (rates[block + 1].time - video.currentTime) + rates[block + 1].value
-      }
-    }
+    this.playingPoint.attr('cx', point.x).attr('cy', point.y)
+    video.playbackRate = this.y.invert(point.y)
 
     let progress = video.currentTime / video.duration * 100
-    this.setState({ progress: progress, block: block })
-
-    console.log (`block: ${block}, progress: ${progress}, rate: ${video.playbackRate}, cs: ${rates[block].value}, ns: ${rates[block + 1].value}`)
+    this.setState({ progress: progress })
   },
 
   render() {
@@ -105,7 +105,7 @@ let SlowFast = React.createClass({
 
         <div className="container">
 
-          <div className="row hidden">
+          <div className="row">
             <div className="col-xs-12">
               <video ref="video" src="sample.mp4"/>
 
