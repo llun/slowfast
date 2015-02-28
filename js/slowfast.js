@@ -39,7 +39,7 @@ let SlowFast = React.createClass({
       , height = 200
       , x = d3.scale.linear().domain([0, d3.max(rates, rate => { return rate.time })]).range([0, width])
       , y = d3.scale.linear().domain([0.5, 8]).range([height, 0])
-      , line = d3.svg.line().interpolate('cardinal').x(rate => { return x(rate.time) }).y(rate => { return y(rate.value) })
+      , line = d3.svg.line().interpolate('monotone').x(rate => { return x(rate.time) }).y(rate => { return y(rate.value) })
 
     let panel = d3.select(this.refs.panel.getDOMNode())
     panel.attr('width', width).attr('height', height)
