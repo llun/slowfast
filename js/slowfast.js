@@ -1,67 +1,74 @@
 import React from 'react'
 import d3 from 'd3'
 
-let rates = [
-  { time: 0.0, value: 1 },
-  { time: 20.0, value: 2 },
-  { time: 50.0, value: 0.5 },
-  { time: 60.0, value: 1 },
-  { time: 65.0, value: 4 },
-  { time: 114.126077, value: 1 }]
+let rates = []
   , bisect = d3.bisector((a, b) => { return a.x - b.x }).right
   , focusPoint = null
   , playingPath = []
   , downTimer = null
-  , player = null
 
 let SlowFast = React.createClass({
+  getInitialState() {
+    return { loading: true }
+  },
+
   video() {
     return this.refs.video.getDOMNode()
   },
   play(e) {
-    // this.video().play()
-    if (player) player.playVideo()
+    this.video().play()
   },
 
   pause(e) {
-    // this.video().pause()
-    if (player) player.pauseVideo()
+    this.video().pause()
   },
 
   reset(e) {
-    // this.video().pause()
-    // this.video().currentTime = 0.0
-    if (player) {
-      player.pauseVideo()
-      player.seekTo(0.0, true)
-    }
+    this.video().pause()
+    this.video().currentTime = 0.0
   },
 
   componentDidMount() {
-
-    player = new YT.Player('player', {
-      height: '390',
-      width: '640',
-      videoId: '5Zg-C8AAIGg',
-      playerVars: {
-        enablejsapi: 1,
-        controls: 0
-      },
-      events: {
-        onStateChange: (e) => {
-
-        }
-      }
-    });
-
     let video = this.video()
     video.addEventListener('timeupdate', this.handleTimeUpdate)
+    video.addEventListener('durationchange', this.handleDuration)
+  },
 
+  handleTimeUpdate(e) {
+    let video = e.target
+
+    let index = bisect(playingPath, { x: this.scaleX(video.currentTime) }, 1)
+    let point = playingPath[index]
+
+    if (!point) { 
+      this.video().pause()
+      return
+    }
+
+    this.playingPoint.attr('cx', point.x).attr('cy', point.y)
+    video.playbackRate = this.scaleY.invert(point.y)
+
+    let progress = video.currentTime / video.duration * 100
+  },
+
+  handleDuration(e) {
+    let video = e.target
+    rates = [
+      { time: 0.0, value: 1 },
+      { time: video.duration, value: 1 }
+    ]
+
+    this.enableControl()
+    this.setState({ loading: false })
+  },
+
+  enableControl() {
     let width = 800
       , height = 200
       , x = d3.scale.linear().domain([0, d3.max(rates, rate => { return rate.time })]).range([0, width])
       , y = d3.scale.linear().domain([0.5, 8]).range([height, 0])
       , line = d3.svg.line().interpolate('monotone').x(rate => { return x(rate.time) }).y(rate => { return y(rate.value) })
+      , video = this.video()
 
     let panel = d3.select(this.refs.panel.getDOMNode())
     panel.attr('width', width).attr('height', height)
@@ -151,23 +158,6 @@ let SlowFast = React.createClass({
 
   },
 
-  handleTimeUpdate(e) {
-    let video = e.target
-
-    let index = bisect(playingPath, { x: this.scaleX(video.currentTime) }, 1)
-    let point = playingPath[index]
-
-    if (!point) { 
-      this.video().pause()
-      return
-    }
-
-    this.playingPoint.attr('cx', point.x).attr('cy', point.y)
-    video.playbackRate = this.scaleY.invert(point.y)
-
-    let progress = video.currentTime / video.duration * 100
-  },
-
   render() {
     let panelStyle = {
       overflow: 'visible',
@@ -189,21 +179,15 @@ let SlowFast = React.createClass({
 
           <div className="row">
             <div className="col-xs-12">
-              <div id="player"></div>
-            </div>
-          </div>
-
-          <div className="row hidden">
-            <div className="col-xs-12">
-              <video ref="video" src="sample.mp4"/>
+              <video ref="video" src="http://pdl.vimeocdn.com/11541/324/253488590.mp4?token2=1425138307_eeb3410cf095f773911b0240ca95806d&aksessionid=801766216ac073d9"/>
             </div>
           </div>
           
           <div className="row">
             <div className="col-xs-12">
-              <button className="btn btn-primary" onClick={this.play}>Play</button>
-              <button className="btn btn-default" onClick={this.pause}>Pause</button>
-              <button className="btn btn-default" onClick={this.reset}>Reset</button>
+              <button disabled={this.state.loading} className="btn btn-primary" onClick={this.play}>Play</button>
+              <button disabled={this.state.loading} className="btn btn-default" onClick={this.pause}>Pause</button>
+              <button disabled={this.state.loading} className="btn btn-default" onClick={this.reset}>Reset</button>
             </div>
           </div>
 
@@ -219,11 +203,7 @@ let SlowFast = React.createClass({
   }
 })
 
-window.onYouTubePlayerAPIReady = function() {
-  React.render(
-    <SlowFast />,
-    document.querySelector('body')
-    )
-}
-
-
+React.render(
+  <SlowFast />,
+  document.querySelector('body')
+  )
