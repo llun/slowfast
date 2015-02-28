@@ -10,15 +10,9 @@ let rates = [
   { time: 114.126077, value: 1 }
 ]
 
-let bisect = d3.bisector((a, b) => {
-  return a.x - b.x
-}).right
+let bisect = d3.bisector((a, b) => { return a.x - b.x }).right
 
 let SlowFast = React.createClass({
-  getInitialState() {
-    return { progress: 0 }
-  },
-
   video() {
     return this.refs.video.getDOMNode()
   },
@@ -59,29 +53,27 @@ let SlowFast = React.createClass({
           .attr('stroke-width', 2)
 
     this.playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
-    this.x = x
-    this.y = y
-    this.path = path
+    this.scaleX = x
+    this.scaleY = y
 
-    let node = this.path.node()
-    this.points = []
+    let node = path.node()
+    this.playingPath = []
     for (let i = 0; i < node.getTotalLength(); i++) {
       let point = node.getPointAtLength(i)
-      this.points.push(point)
+      this.playingPath.push(point)
     }
   },
 
   handleTimeUpdate(e) {
     let video = e.target
 
-    let index = bisect(this.points, { x: this.x(video.currentTime) }, 1)
-    let point = this.points[index]
+    let index = bisect(this.playingPath, { x: this.scaleX(video.currentTime) }, 1)
+    let point = this.playingPath[index]
 
     this.playingPoint.attr('cx', point.x).attr('cy', point.y)
-    video.playbackRate = this.y.invert(point.y)
+    video.playbackRate = this.scaleY.invert(point.y)
 
     let progress = video.currentTime / video.duration * 100
-    this.setState({ progress: progress })
   },
 
   render() {
@@ -108,12 +100,6 @@ let SlowFast = React.createClass({
           <div className="row">
             <div className="col-xs-12">
               <video ref="video" src="sample.mp4"/>
-
-              <div className="progress">
-                <div className="progress-bar" style={progressStyle}>
-                  <span className="sr-only">{this.state.progress}% Complete</span>
-                </div>
-              </div>
             </div>
           </div>
 
