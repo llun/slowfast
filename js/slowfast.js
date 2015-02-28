@@ -93,6 +93,7 @@ let SlowFast = React.createClass({
 
         playingPoint.attr('cx', point.x).attr('cy', point.y)
         video.playbackRate = y.invert(point.y)
+        video.currentTime = x.invert(point.x)
 
       })
       .on('mouseup', () => {
@@ -109,6 +110,11 @@ let SlowFast = React.createClass({
 
     let index = bisect(playingPath, { x: this.scaleX(video.currentTime) }, 1)
     let point = playingPath[index]
+
+    if (!point) { 
+      this.video().pause()
+      return
+    }
 
     this.playingPoint.attr('cx', point.x).attr('cy', point.y)
     video.playbackRate = this.scaleY.invert(point.y)
