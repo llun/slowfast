@@ -74,9 +74,24 @@ let SlowFast = React.createClass({
 
         let mouse = d3.mouse(this)
 
-        let datum = focusPoint.datum()
-        datum.time = x.invert(mouse[0])
-        datum.value = y.invert(mouse[1])
+        let rate = focusPoint.datum()
+        let rateIndex = rates.indexOf(rate)
+
+        let newTime = x.invert(mouse[0])
+        let newRate = y.invert(mouse[1])
+
+        if (rateIndex > 0) {
+          let previousRate = rates[rateIndex - 1]
+          if (newTime <= previousRate.time) return
+        }
+
+        if (rateIndex < rates.length - 1) {
+          let nextRate = rates[rateIndex + 1]
+          if (newTime >= nextRate.time) return
+        }
+
+        rate.time = newTime
+        rate.value = newRate
 
         focusPoint.attr('cx', mouse[0]).attr('cy', mouse[1])
         path.attr('d', line(rates))
