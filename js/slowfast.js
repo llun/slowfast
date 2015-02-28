@@ -7,31 +7,53 @@ let rates = [
   { time: 50.0, value: 0.5 },
   { time: 60.0, value: 1 },
   { time: 65.0, value: 4 },
-  { time: 114.126077, value: 1 }
-]
-
-let bisect = d3.bisector((a, b) => { return a.x - b.x }).right
-let focusPoint = null
-let playingPath = []
+  { time: 114.126077, value: 1 }]
+  , bisect = d3.bisector((a, b) => { return a.x - b.x }).right
+  , focusPoint = null
+  , playingPath = []
+  , downTimer = null
+  , player = null
 
 let SlowFast = React.createClass({
   video() {
     return this.refs.video.getDOMNode()
   },
   play(e) {
-    this.video().play()
+    // this.video().play()
+    if (player) player.playVideo()
   },
 
   pause(e) {
-    this.video().pause()
+    // this.video().pause()
+    if (player) player.pauseVideo()
   },
 
   reset(e) {
-    this.video().pause()
-    this.video().currentTime = 0.0
+    // this.video().pause()
+    // this.video().currentTime = 0.0
+    if (player) {
+      player.pauseVideo()
+      player.seekTo(0.0, true)
+    }
   },
 
   componentDidMount() {
+
+    player = new YT.Player('player', {
+      height: '390',
+      width: '640',
+      videoId: '5Zg-C8AAIGg',
+      playerVars: {
+        enablejsapi: 1,
+        controls: 0
+      },
+      events: {
+        onStateChange: (e) => {
+
+        }
+      }
+    });
+
     let video = this.video()
     video.addEventListener('timeupdate', this.handleTimeUpdate)
 
@@ -69,6 +91,12 @@ let SlowFast = React.createClass({
 
 
     panel
+      .on('mousedown', function() {
+        clearTimeout(downTimer)
+        downTimer = setTimeout(function() {
+          console.log ('show menu')
+        }, 2000)
+      })
       .on('mousemove', function() {
         if (!focusPoint) return
 
@@ -113,6 +141,9 @@ let SlowFast = React.createClass({
       })
       .on('mouseup', () => {
         focusPoint = null
+        if (downTimer) {
+          clearTimeout(downTimer)
+        }
       })
 
     this.scaleX = x
@@ -158,10 +189,15 @@ let SlowFast = React.createClass({
 
           <div className="row">
             <div className="col-xs-12">
-              <video ref="video" src="sample.mp4"/>
+              <div id="player"></div>
             </div>
           </div>
 
+          <div className="row hidden">
+            <div className="col-xs-12">
+              <video ref="video" src="sample.mp4"/>
+            </div>
+          </div>
           
           <div className="row">
             <div className="col-xs-12">
@@ -183,7 +219,11 @@ let SlowFast = React.createClass({
   }
 })
 
-React.render(
-  <SlowFast />,
-  document.querySelector('body')
-  )
+window.onYouTubePlayerAPIReady = function() {
+  React.render(
+    <SlowFast />,
+    document.querySelector('body')
+    )
+}
+
+
