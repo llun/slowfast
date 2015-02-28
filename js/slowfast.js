@@ -5,13 +5,14 @@ let rates = [
   { time: 0.0, value: 1 },
   { time: 20.0, value: 2 },
   { time: 50.0, value: 0.5 },
-  { time: 60.0, value: 0.1 },
+  { time: 60.0, value: 1 },
   { time: 65.0, value: 4 },
   { time: 114.126077, value: 1 }
 ]
 
 let bisect = d3.bisector((a, b) => { return a.x - b.x }).right
 let focusPoint = null
+let playingPath = []
 
 let SlowFast = React.createClass({
   video() {
@@ -31,12 +32,13 @@ let SlowFast = React.createClass({
   },
 
   componentDidMount() {
-    this.video().addEventListener('timeupdate', this.handleTimeUpdate)
+    let video = this.video()
+    video.addEventListener('timeupdate', this.handleTimeUpdate)
 
     let width = 800
       , height = 200
       , x = d3.scale.linear().domain([0, d3.max(rates, rate => { return rate.time })]).range([0, width])
-      , y = d3.scale.linear().domain([0, d3.max(rates, rate => { return rate.value })]).range([height, 0])
+      , y = d3.scale.linear().domain([0.5, 8]).range([height, 0])
       , line = d3.svg.line().interpolate('cardinal').x(rate => { return x(rate.time) }).y(rate => { return y(rate.value) })
 
     let panel = d3.select(this.refs.panel.getDOMNode())
@@ -44,15 +46,17 @@ let SlowFast = React.createClass({
 
     let path = panel.append('path').attr('d', line(rates)).attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'none')
     let node = path.node()
-    this.playingPath = []
     for (let i = 0; i < node.getTotalLength(); i++) {
       let point = node.getPointAtLength(i)
-      this.playingPath.push(point)
+      playingPath.push(point)
     }
 
-    let points = panel.selectAll('circle').data(rates)
+    let playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
+    this.playingPoint = playingPoint
+    let points = panel.selectAll('.ratePoint').data(rates)
       .enter()
         .append('circle')
+          .attr('class', 'ratePoint')
           .attr('cx', rate => { return x(rate.time) })
           .attr('cy', rate => { return y(rate.value) })
           .attr('r', 4)
@@ -63,12 +67,12 @@ let SlowFast = React.createClass({
             focusPoint = d3.select(this)
           })
 
+
     panel
       .on('mousemove', function() {
         if (!focusPoint) return
 
         let mouse = d3.mouse(this)
-        // focusPoint.datum().time = 10
 
         let datum = focusPoint.datum()
         datum.time = x.invert(mouse[0])
@@ -77,31 +81,34 @@ let SlowFast = React.createClass({
         focusPoint.attr('cx', mouse[0]).attr('cy', mouse[1])
         path.attr('d', line(rates))
         
-        this.playingPath = []
+        playingPath = []
         node = path.node()
         for (let i = 0; i < node.getTotalLength(); i++) {
           let point = node.getPointAtLength(i)
-          this.playingPath.push(point)
+          playingPath.push(point)
         }
+
+        let index = bisect(playingPath, { x: x(video.currentTime) }, 1)
+        let point = playingPath[index]
+
+        playingPoint.attr('cx', point.x).attr('cy', point.y)
+        video.playbackRate = y.invert(point.y)
 
       })
       .on('mouseup', () => {
         focusPoint = null
       })
 
-    this.playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
     this.scaleX = x
     this.scaleY = y
 
-    
-    
   },
 
   handleTimeUpdate(e) {
     let video = e.target
 
-    let index = bisect(this.playingPath, { x: this.scaleX(video.currentTime) }, 1)
-    let point = this.playingPath[index]
+    let index = bisect(playingPath, { x: this.scaleX(video.currentTime) }, 1)
+    let point = playingPath[index]
 
     this.playingPoint.attr('cx', point.x).attr('cy', point.y)
     video.playbackRate = this.scaleY.invert(point.y)
@@ -111,7 +118,9 @@ let SlowFast = React.createClass({
 
   render() {
     let panelStyle = {
-      overflow: 'visible'
+      overflow: 'visible',
+      border: '1px solid black',
+      boxSizing: 'content-box'
     }
 
     return (
