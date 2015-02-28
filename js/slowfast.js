@@ -11,6 +11,7 @@ let rates = [
 ]
 
 let bisect = d3.bisector((a, b) => { return a.x - b.x }).right
+let focusPoint = null
 
 let SlowFast = React.createClass({
   video() {
@@ -42,6 +43,13 @@ let SlowFast = React.createClass({
     panel.attr('width', width).attr('height', height)
 
     let path = panel.append('path').attr('d', line(rates)).attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'none')
+    let node = path.node()
+    this.playingPath = []
+    for (let i = 0; i < node.getTotalLength(); i++) {
+      let point = node.getPointAtLength(i)
+      this.playingPath.push(point)
+    }
+
     let points = panel.selectAll('circle').data(rates)
       .enter()
         .append('circle')
@@ -51,17 +59,42 @@ let SlowFast = React.createClass({
           .attr('fill', 'white')
           .attr('stroke', 'black')
           .attr('stroke-width', 2)
+          .on('mousedown', function() {
+            focusPoint = d3.select(this)
+          })
+
+    panel
+      .on('mousemove', function() {
+        if (!focusPoint) return
+
+        let mouse = d3.mouse(this)
+        // focusPoint.datum().time = 10
+
+        let datum = focusPoint.datum()
+        datum.time = x.invert(mouse[0])
+        datum.value = y.invert(mouse[1])
+
+        focusPoint.attr('cx', mouse[0]).attr('cy', mouse[1])
+        path.attr('d', line(rates))
+        
+        this.playingPath = []
+        node = path.node()
+        for (let i = 0; i < node.getTotalLength(); i++) {
+          let point = node.getPointAtLength(i)
+          this.playingPath.push(point)
+        }
+
+      })
+      .on('mouseup', () => {
+        focusPoint = null
+      })
 
     this.playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
     this.scaleX = x
     this.scaleY = y
 
-    let node = path.node()
-    this.playingPath = []
-    for (let i = 0; i < node.getTotalLength(); i++) {
-      let point = node.getPointAtLength(i)
-      this.playingPath.push(point)
-    }
+    
+    
   },
 
   handleTimeUpdate(e) {
@@ -77,10 +110,6 @@ let SlowFast = React.createClass({
   },
 
   render() {
-    let progressStyle = {
-      width: `${this.state.progress}%`
-    }
-
     let panelStyle = {
       overflow: 'visible'
     }
