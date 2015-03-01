@@ -9,7 +9,7 @@ let rates = []
 
 let SlowFast = React.createClass({
   getInitialState() {
-    return { loading: true }
+    return { loading: true, adjustPoints: false }
   },
 
   video() {
@@ -26,6 +26,11 @@ let SlowFast = React.createClass({
   reset(e) {
     this.video().pause()
     this.video().currentTime = 0.0
+  },
+
+  addPoint() {
+    this.video().pause()
+    this.state.set({ adjustPoints: 'adding' })
   },
 
   componentDidMount() {
@@ -86,8 +91,7 @@ let SlowFast = React.createClass({
       let point = node.getPointAtLength(i)
       playingPath.push(point)
     }
-
-    let marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 4).attr('fill', 'black').attr('display', 'none')
+    
     let playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
     this.playingPoint = playingPoint
     let points = panel.selectAll('.ratePoint').data(rates)
@@ -103,10 +107,12 @@ let SlowFast = React.createClass({
           .on('mousedown', function() {
             focusPoint = d3.select(this)
           })
-
+    let marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 4).attr('fill', 'black').attr('display', 'none')
 
     panel
       .on('mouseover', function() {
+        let mouse = d3.mouse(this)
+
         marker.attr('display', 'inherit')
       })
       .on('mouseout', function() {
@@ -118,7 +124,7 @@ let SlowFast = React.createClass({
         let newTime = x.invert(mouse[0])
         let newRate = y.invert(mouse[1])
 
-        let index = bisect(playingPath, { x: x(video.currentTime) }, 1)
+        let index = bisect(playingPath, { x: mouse[0] }, 1)
         let point = playingPath[index]
 
         marker.attr('cx', point.x).attr('cy', point.y)
@@ -195,9 +201,10 @@ let SlowFast = React.createClass({
           
           <div className="row">
             <div className="col-xs-12">
-              <button disabled={this.state.loading} className="btn btn-primary" onClick={this.play}>Play</button>
+              <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-primary" onClick={this.play}>Play</button>
               <button disabled={this.state.loading} className="btn btn-default" onClick={this.pause}>Pause</button>
               <button disabled={this.state.loading} className="btn btn-default" onClick={this.reset}>Reset</button>
+              <button disabled={this.state.loading} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
             </div>
           </div>
 
