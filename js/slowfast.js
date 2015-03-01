@@ -2,6 +2,8 @@ import React from 'react'
 import d3 from 'd3'
 import wg_fetch from 'whatwg-fetch'
 
+const ADDING_POINT = 'adding', REMOVING_POINT = 'removing'
+
 let rates = []
   , bisectRate = d3.bisector(datum => { return datum.time }).right
   , bisectPath = d3.bisector(datum => { return datum.x }).right
@@ -10,7 +12,7 @@ let rates = []
 
 let SlowFast = React.createClass({
   getInitialState() {
-    return { loading: true, adjustPoints: false }
+    return { loading: true, adjustPoints: false, url: '', video: '' }
   },
 
   video() {
@@ -32,16 +34,33 @@ let SlowFast = React.createClass({
   addPoint() {
     this.video().pause()
 
-    if (this.state.adjustPoints == 'adding') {
+    if (this.state.adjustPoints == ADDING_POINT) {
       return this.setState({ adjustPoints: false })
     }
-    this.setState({ adjustPoints: 'adding' })
+    this.setState({ adjustPoints: ADDING_POINT })
+  },
+
+  removePoint() {
+    this.video().pause()
+
+    if (this.state.adjustPoints == REMOVING_POINT) {
+      return this.setState({ adjustPoints: false })
+    }
+    this.setState({ adjustPoints: REMOVING_POINT })
   },
 
   componentDidMount() {
     let video = this.video()
+  
+    let idPattern = window.location.search.match(/(video=(\d+))/i)
+    let id = '95251007'
+    if (idPattern) {
+      id = idPattern[2]
+    }
 
-    fetch('http://vimeo-config.herokuapp.com/95251007.json')
+    this.setState({ video: id })
+    
+    fetch(`http://vimeo-config.herokuapp.com/${id}.json`)
       .then(response => { return response.json() })
       .then(json => {
         video.src = json.request.files.h264.sd.url
@@ -75,11 +94,30 @@ let SlowFast = React.createClass({
       { time: video.duration, value: 1 }
     ]
 
+    let ratePattern = window.location.search.match(/(rates=((\d+\.\d+\:\d+\,*)+))/i)
+    if (ratePattern) {
+      let data = ratePattern[2]
+      let process = data.split(',').map(each => {
+        let value = each.split(':')
+        if (value.length < 2) { return { time: -1, value: -1 } } // Invalid data
+
+        if (value[0] < 0) value[0] = 0
+        if (value[0] > video.duration) value[0] = video.duration
+
+        if (value[1] < 0.5) value[1] = 0.5
+        if (value[1] > 4) value[1] = 4
+
+        return { time: value[0], value: value[1] }
+      })
+
+      if (process.length > 2) rates = process
+    }
+
     this.enableControl()
     this.setState({ loading: false })
   },
 
-  redrawRates(group, x, y) {
+  redrawRates(group, path, x, y, line, playingPoint) {
     let self = this
     group.selectAll('.ratePoint').remove()
     group.selectAll('.ratePoint').data(rates)
@@ -95,36 +133,68 @@ let SlowFast = React.createClass({
           .on('mousedown', function() {
             focusPoint = d3.select(this)
           })
+          .on('click', function() {
+            if (self.state.adjustPoints == REMOVING_POINT) {
+              let point = d3.select(this).datum()
+              let index = rates.indexOf(point)
+              if (index == 0 || index == rates.length - 1)  return
+
+              rates = rates.slice(0, index).concat(rates.slice(index + 1))
+              self.redrawRates(group, path, x, y, line, playingPoint)
+            }
+          })
+    this.updatePath(path, x, y, line, playingPoint)
   },
 
-  enableControl() {
-    let width = 800
-      , height = 200
-      , x = d3.scale.linear().domain([0, d3.max(rates, rate => { return rate.time })]).range([0, width])
-      , y = d3.scale.linear().domain([0.5, 4]).range([height, 0])
-      , line = d3.svg.line().interpolate('monotone').x(rate => { return x(rate.time) }).y(rate => { return y(rate.value) })
-      , video = this.video()
-      , self = this
+  updatePath(path, x, y, line, playingPoint) {
+    let video = this.video()
+    playingPath = []
 
-    let panel = d3.select(this.refs.panel.getDOMNode())
-    panel.attr('width', width).attr('height', height)
-
-    let path = panel.append('path').attr('d', line(rates)).attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'none')
+    path.attr('d', line(rates))
     let node = path.node()
     for (let i = 0; i < node.getTotalLength(); i++) {
       let point = node.getPointAtLength(i)
       playingPath.push(point)
     }
-    
-    let playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
+
+    let index = bisectPath(playingPath, x(video.currentTime), 1)
+    let point = playingPath[index]
+
+    playingPoint.attr('cx', point.x).attr('cy', point.y)
+    video.playbackRate = y.invert(point.y)
+
+    let location = window.location.toString()
+    location = location.substring(0, location.indexOf('?'))
+
+    let encodedRates = rates.map(each => {
+      return `${each.time}:${each.value}`
+    }).join(',')
+    this.setState({ url: `${location}?video=${this.state.video}&rates=${encodedRates}` })
+  },
+
+  enableControl() {
+    let video = this.video()
+      , width = 800
+      , height = 200
+      , x = d3.scale.linear().domain([0, video.duration]).range([0, width])
+      , y = d3.scale.linear().domain([0.5, 4]).range([height, 0])
+      , line = d3.svg.line().interpolate('monotone').x(rate => { return x(rate.time) }).y(rate => { return y(rate.value) })
+      , self = this
+
+    let panel = d3.select(this.refs.panel.getDOMNode())
+    panel.attr('width', width).attr('height', height)
+
+    let path = panel.append('path').attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'none')
+      , playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
+      , ratesGroup = panel.append('g')
+      , marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 4).attr('fill', 'black').attr('display', 'none')
+
+    this.redrawRates(ratesGroup, path, x, y, line, playingPoint)
     this.playingPoint = playingPoint
-    let ratesGroup = panel.append('g')
-    this.redrawRates(ratesGroup, x, y)
-    let marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 4).attr('fill', 'black').attr('display', 'none')
 
     panel
       .on('click', function() {
-        if (self.state.adjustPoints == 'adding') {
+        if (self.state.adjustPoints == ADDING_POINT) {
           let mouse = d3.mouse(this)
 
           let time = x.invert(marker.attr('cx'))
@@ -132,12 +202,12 @@ let SlowFast = React.createClass({
 
           let index = bisectRate(rates, time)
           rates = rates.slice(0, index).concat([{ time: time, value: rate }]).concat(rates.slice(index))
-          self.redrawRates(ratesGroup, x, y)
+          self.redrawRates(ratesGroup, path, x, y, line, playingPoint)
           self.setState({ adjustPoints: false })
         }
       })
       .on('mouseover', function() {
-        if (self.state.adjustPoints == 'adding') {
+        if (self.state.adjustPoints == ADDING_POINT) {
           let mouse = d3.mouse(this)
           marker.attr('display', 'inherit')
         }
@@ -153,7 +223,7 @@ let SlowFast = React.createClass({
 
         let index = bisectPath(playingPath, mouse[0], 1)
 
-        if (self.state.adjustPoints == 'adding') {
+        if (self.state.adjustPoints == ADDING_POINT) {
           let point = playingPath[index]
 
           if (point) {
@@ -180,22 +250,7 @@ let SlowFast = React.createClass({
         rate.value = newRate
 
         focusPoint.attr('cx', mouse[0]).attr('cy', mouse[1])
-        path.attr('d', line(rates))
-        
-        playingPath = []
-        node = path.node()
-        for (let i = 0; i < node.getTotalLength(); i++) {
-          let point = node.getPointAtLength(i)
-          playingPath.push(point)
-        }
-
-        index = bisectPath(playingPath, x(video.currentTime), 1)
-        let point = playingPath[index]
-
-        playingPoint.attr('cx', point.x).attr('cy', point.y)
-        video.playbackRate = y.invert(point.y)
-        video.currentTime = x.invert(point.x)
-
+        self.updatePath(path, x, y, line, playingPoint)
       })
       .on('mouseup', () => {
         focusPoint = null
@@ -236,7 +291,10 @@ let SlowFast = React.createClass({
               <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-primary" onClick={this.play}>Play</button>
               <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-default" onClick={this.pause}>Pause</button>
               <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-default" onClick={this.reset}>Reset</button>
-              <button disabled={this.state.loading} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
+              <button disabled={this.state.loading || (this.state.adjustPoints == REMOVING_POINT)} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
+              <button disabled={this.state.loading || (this.state.adjustPoints == ADDING_POINT)} className="btn btn-default" onClick={this.removePoint}>Remove Point</button>
+
+              <input type="text" className="form-control" value={this.state.url} />
             </div>
           </div>
 

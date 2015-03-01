@@ -28127,6 +28127,9 @@ var d3 = _interopRequire(require("d3"));
 
 var wg_fetch = _interopRequire(require("whatwg-fetch"));
 
+var ADDING_POINT = "adding",
+    REMOVING_POINT = "removing";
+
 var rates = [],
     bisectRate = d3.bisector(function (datum) {
   return datum.time;
@@ -28141,7 +28144,7 @@ var SlowFast = React.createClass({
   displayName: "SlowFast",
 
   getInitialState: function getInitialState() {
-    return { loading: true, adjustPoints: false };
+    return { loading: true, adjustPoints: false, url: "", video: "" };
   },
 
   video: function video() {
@@ -28163,10 +28166,19 @@ var SlowFast = React.createClass({
   addPoint: function addPoint() {
     this.video().pause();
 
-    if (this.state.adjustPoints == "adding") {
+    if (this.state.adjustPoints == ADDING_POINT) {
       return this.setState({ adjustPoints: false });
     }
-    this.setState({ adjustPoints: "adding" });
+    this.setState({ adjustPoints: ADDING_POINT });
+  },
+
+  removePoint: function removePoint() {
+    this.video().pause();
+
+    if (this.state.adjustPoints == REMOVING_POINT) {
+      return this.setState({ adjustPoints: false });
+    }
+    this.setState({ adjustPoints: REMOVING_POINT });
   },
 
   componentDidMount: function componentDidMount() {
@@ -28174,7 +28186,15 @@ var SlowFast = React.createClass({
 
     var video = this.video();
 
-    fetch("http://vimeo-config.herokuapp.com/95251007.json").then(function (response) {
+    var idPattern = window.location.search.match(/(video=(\d+))/i);
+    var id = "95251007";
+    if (idPattern) {
+      id = idPattern[2];
+    }
+
+    this.setState({ video: id });
+
+    fetch("http://vimeo-config.herokuapp.com/" + id + ".json").then(function (response) {
       return response.json();
     }).then(function (json) {
       video.src = json.request.files.h264.sd.url;
@@ -28205,11 +28225,32 @@ var SlowFast = React.createClass({
     var video = e.target;
     rates = [{ time: 0, value: 1 }, { time: video.duration, value: 1 }];
 
+    var ratePattern = window.location.search.match(/(rates=((\d+\.\d+\:\d+\,*)+))/i);
+    if (ratePattern) {
+      var data = ratePattern[2];
+      var _process = data.split(",").map(function (each) {
+        var value = each.split(":");
+        if (value.length < 2) {
+          return { time: -1, value: -1 };
+        } // Invalid data
+
+        if (value[0] < 0) value[0] = 0;
+        if (value[0] > video.duration) value[0] = video.duration;
+
+        if (value[1] < 0.5) value[1] = 0.5;
+        if (value[1] > 4) value[1] = 4;
+
+        return { time: value[0], value: value[1] };
+      });
+
+      if (_process.length > 2) rates = _process;
+    }
+
     this.enableControl();
     this.setState({ loading: false });
   },
 
-  redrawRates: function redrawRates(group, x, y) {
+  redrawRates: function redrawRates(group, path, x, y, line, playingPoint) {
     var self = this;
     group.selectAll(".ratePoint").remove();
     group.selectAll(".ratePoint").data(rates).enter().append("circle").attr("class", "ratePoint").attr("cx", function (rate) {
@@ -28218,42 +28259,71 @@ var SlowFast = React.createClass({
       return y(rate.value);
     }).attr("r", 4).attr("fill", "white").attr("stroke", "black").attr("stroke-width", 2).on("mousedown", function () {
       focusPoint = d3.select(this);
+    }).on("click", function () {
+      if (self.state.adjustPoints == REMOVING_POINT) {
+        var point = d3.select(this).datum();
+        var index = rates.indexOf(point);
+        if (index == 0 || index == rates.length - 1) return;
+
+        rates = rates.slice(0, index).concat(rates.slice(index + 1));
+        self.redrawRates(group, path, x, y, line, playingPoint);
+      }
     });
+    this.updatePath(path, x, y, line, playingPoint);
+  },
+
+  updatePath: function updatePath(path, x, y, line, playingPoint) {
+    var video = this.video();
+    playingPath = [];
+
+    path.attr("d", line(rates));
+    var node = path.node();
+    for (var i = 0; i < node.getTotalLength(); i++) {
+      var _point = node.getPointAtLength(i);
+      playingPath.push(_point);
+    }
+
+    var index = bisectPath(playingPath, x(video.currentTime), 1);
+    var point = playingPath[index];
+
+    playingPoint.attr("cx", point.x).attr("cy", point.y);
+    video.playbackRate = y.invert(point.y);
+
+    var location = window.location.toString();
+    location = location.substring(0, location.indexOf("?"));
+
+    var encodedRates = rates.map(function (each) {
+      return "" + each.time + ":" + each.value;
+    }).join(",");
+    this.setState({ url: "" + location + "?video=" + this.state.video + "&rates=" + encodedRates });
   },
 
   enableControl: function enableControl() {
-    var width = 800,
+    var video = this.video(),
+        width = 800,
         height = 200,
-        x = d3.scale.linear().domain([0, d3.max(rates, function (rate) {
-      return rate.time;
-    })]).range([0, width]),
+        x = d3.scale.linear().domain([0, video.duration]).range([0, width]),
         y = d3.scale.linear().domain([0.5, 4]).range([height, 0]),
         line = d3.svg.line().interpolate("monotone").x(function (rate) {
       return x(rate.time);
     }).y(function (rate) {
       return y(rate.value);
     }),
-        video = this.video(),
         self = this;
 
     var panel = d3.select(this.refs.panel.getDOMNode());
     panel.attr("width", width).attr("height", height);
 
-    var path = panel.append("path").attr("d", line(rates)).attr("stroke", "blue").attr("stroke-width", 2).attr("fill", "none");
-    var node = path.node();
-    for (var i = 0; i < node.getTotalLength(); i++) {
-      var point = node.getPointAtLength(i);
-      playingPath.push(point);
-    }
+    var path = panel.append("path").attr("stroke", "blue").attr("stroke-width", 2).attr("fill", "none"),
+        playingPoint = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].value)).attr("r", 6).attr("fill", "white").attr("stroke", "red").attr("stroke-width", 2),
+        ratesGroup = panel.append("g"),
+        marker = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].value)).attr("r", 4).attr("fill", "black").attr("display", "none");
 
-    var playingPoint = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].value)).attr("r", 6).attr("fill", "white").attr("stroke", "red").attr("stroke-width", 2);
+    this.redrawRates(ratesGroup, path, x, y, line, playingPoint);
     this.playingPoint = playingPoint;
-    var ratesGroup = panel.append("g");
-    this.redrawRates(ratesGroup, x, y);
-    var marker = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].value)).attr("r", 4).attr("fill", "black").attr("display", "none");
 
     panel.on("click", function () {
-      if (self.state.adjustPoints == "adding") {
+      if (self.state.adjustPoints == ADDING_POINT) {
         var mouse = d3.mouse(this);
 
         var time = x.invert(marker.attr("cx"));
@@ -28261,11 +28331,11 @@ var SlowFast = React.createClass({
 
         var index = bisectRate(rates, time);
         rates = rates.slice(0, index).concat([{ time: time, value: rate }]).concat(rates.slice(index));
-        self.redrawRates(ratesGroup, x, y);
+        self.redrawRates(ratesGroup, path, x, y, line, playingPoint);
         self.setState({ adjustPoints: false });
       }
     }).on("mouseover", function () {
-      if (self.state.adjustPoints == "adding") {
+      if (self.state.adjustPoints == ADDING_POINT) {
         var mouse = d3.mouse(this);
         marker.attr("display", "inherit");
       }
@@ -28279,11 +28349,11 @@ var SlowFast = React.createClass({
 
       var index = bisectPath(playingPath, mouse[0], 1);
 
-      if (self.state.adjustPoints == "adding") {
-        var _point = playingPath[index];
+      if (self.state.adjustPoints == ADDING_POINT) {
+        var point = playingPath[index];
 
-        if (_point) {
-          marker.attr("cx", _point.x).attr("cy", _point.y);
+        if (point) {
+          marker.attr("cx", point.x).attr("cy", point.y);
         }
       }
 
@@ -28306,21 +28376,7 @@ var SlowFast = React.createClass({
       rate.value = newRate;
 
       focusPoint.attr("cx", mouse[0]).attr("cy", mouse[1]);
-      path.attr("d", line(rates));
-
-      playingPath = [];
-      node = path.node();
-      for (var i = 0; i < node.getTotalLength(); i++) {
-        var _point2 = node.getPointAtLength(i);
-        playingPath.push(_point2);
-      }
-
-      index = bisectPath(playingPath, x(video.currentTime), 1);
-      var point = playingPath[index];
-
-      playingPoint.attr("cx", point.x).attr("cy", point.y);
-      video.playbackRate = y.invert(point.y);
-      video.currentTime = x.invert(point.x);
+      self.updatePath(path, x, y, line, playingPoint);
     }).on("mouseup", function () {
       focusPoint = null;
     });
@@ -28391,9 +28447,15 @@ var SlowFast = React.createClass({
             ),
             React.createElement(
               "button",
-              { disabled: this.state.loading, className: "btn btn-default", onClick: this.addPoint },
+              { disabled: this.state.loading || this.state.adjustPoints == REMOVING_POINT, className: "btn btn-default", onClick: this.addPoint },
               "Add Point"
-            )
+            ),
+            React.createElement(
+              "button",
+              { disabled: this.state.loading || this.state.adjustPoints == ADDING_POINT, className: "btn btn-default", onClick: this.removePoint },
+              "Remove Point"
+            ),
+            React.createElement("input", { type: "text", className: "form-control", value: this.state.url })
           )
         ),
         React.createElement(
