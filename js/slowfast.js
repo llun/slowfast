@@ -12,7 +12,7 @@ let rates = []
 
 let SlowFast = React.createClass({
   getInitialState() {
-    return { loading: true, adjustPoints: false }
+    return { loading: true, adjustPoints: false, url: '', video: '' }
   },
 
   video() {
@@ -57,6 +57,8 @@ let SlowFast = React.createClass({
     if (idPattern) {
       id = idPattern[2]
     }
+
+    this.setState({ video: id })
     
     fetch(`http://vimeo-config.herokuapp.com/${id}.json`)
       .then(response => { return response.json() })
@@ -160,6 +162,14 @@ let SlowFast = React.createClass({
 
     playingPoint.attr('cx', point.x).attr('cy', point.y)
     video.playbackRate = y.invert(point.y)
+
+    let location = window.location.toString()
+    location = location.substring(0, location.indexOf('?'))
+
+    let encodedRates = rates.map(each => {
+      return `${each.time}:${each.value}`
+    }).join(',')
+    this.setState({ url: `${location}?video=${this.state.video}&rates=${encodedRates}` })
   },
 
   enableControl() {
@@ -283,6 +293,8 @@ let SlowFast = React.createClass({
               <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-default" onClick={this.reset}>Reset</button>
               <button disabled={this.state.loading || (this.state.adjustPoints == REMOVING_POINT)} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
               <button disabled={this.state.loading || (this.state.adjustPoints == ADDING_POINT)} className="btn btn-default" onClick={this.removePoint}>Remove Point</button>
+
+              <input type="text" className="form-control" value={this.state.url} />
             </div>
           </div>
 
