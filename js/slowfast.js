@@ -3,7 +3,8 @@ import d3 from 'd3'
 import wg_fetch from 'whatwg-fetch'
 
 let rates = []
-  , bisect = d3.bisector(datum => { return datum.x }).right
+  , bisectRate = d3.bisector(datum => { return datum.time }).right
+  , bisectPath = d3.bisector(datum => { return datum.x }).right
   , focusPoint = null
   , playingPath = []
 
@@ -53,7 +54,7 @@ let SlowFast = React.createClass({
   handleTimeUpdate(e) {
     let video = e.target
 
-    let index = bisect(playingPath, { x: this.scaleX(video.currentTime) }, 1)
+    let index = bisectPath(playingPath, { x: this.scaleX(video.currentTime) }, 1)
     let point = playingPath[index]
 
     if (!point) { 
@@ -78,6 +79,23 @@ let SlowFast = React.createClass({
     this.setState({ loading: false })
   },
 
+  redrawRates(group, x, y) {
+    console.log (rates)
+    group.selectAll('.ratePoint').data(rates)
+      .enter()
+        .append('circle')
+          .attr('class', 'ratePoint')
+          .attr('cx', rate => { return x(rate.time) })
+          .attr('cy', rate => { return y(rate.value) })
+          .attr('r', 4)
+          .attr('fill', 'white')
+          .attr('stroke', 'black')
+          .attr('stroke-width', 2)
+          .on('mousedown', function() {
+            focusPoint = d3.select(this)
+          })
+  },
+
   enableControl() {
     let width = 800
       , height = 200
@@ -99,22 +117,24 @@ let SlowFast = React.createClass({
     
     let playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
     this.playingPoint = playingPoint
-    let points = panel.selectAll('.ratePoint').data(rates)
-      .enter()
-        .append('circle')
-          .attr('class', 'ratePoint')
-          .attr('cx', rate => { return x(rate.time) })
-          .attr('cy', rate => { return y(rate.value) })
-          .attr('r', 4)
-          .attr('fill', 'white')
-          .attr('stroke', 'black')
-          .attr('stroke-width', 2)
-          .on('mousedown', function() {
-            focusPoint = d3.select(this)
-          })
+    let ratesGroup = panel.append('g')
+    this.redrawRates(ratesGroup, x, y)
     let marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 4).attr('fill', 'black').attr('display', 'none')
 
     panel
+      .on('click', function() {
+        if (self.state.adjustPoints == 'adding') {
+          let mouse = d3.mouse(this)
+
+          let time = x.invert(marker.attr('cx'))
+          let rate = y.invert(marker.attr('cy'))
+
+          let index = bisectRate(rates, time)
+          rates = rates.slice(0, index).concat([{ time: time, value: rate }]).concat(rates.slice(index))
+          self.redrawRates(ratesGroup, x, y)
+          self.setState({ adjustPoints: false })
+        }
+      })
       .on('mouseover', function() {
         if (self.state.adjustPoints == 'adding') {
           let mouse = d3.mouse(this)
@@ -130,7 +150,7 @@ let SlowFast = React.createClass({
         let newTime = x.invert(mouse[0])
         let newRate = y.invert(mouse[1])
 
-        let index = bisect(playingPath, mouse[0], 1)
+        let index = bisectPath(playingPath, mouse[0], 1)
 
         if (self.state.adjustPoints == 'adding') {
           let point = playingPath[index]
@@ -168,7 +188,7 @@ let SlowFast = React.createClass({
           playingPath.push(point)
         }
 
-        index = bisect(playingPath, x(video.currentTime), 1)
+        index = bisectPath(playingPath, x(video.currentTime), 1)
         point = playingPath[index]
 
         playingPoint.attr('cx', point.x).attr('cy', point.y)
