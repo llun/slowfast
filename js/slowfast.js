@@ -90,7 +90,7 @@ let SlowFast = React.createClass({
     this.setState({ loading: false })
   },
 
-  redrawRates(group, x, y) {
+  redrawRates(group, path, x, y, line, playingPoint) {
     let self = this
     group.selectAll('.ratePoint').remove()
     group.selectAll('.ratePoint').data(rates)
@@ -106,6 +106,35 @@ let SlowFast = React.createClass({
           .on('mousedown', function() {
             focusPoint = d3.select(this)
           })
+          .on('click', function() {
+            if (self.state.adjustPoints == REMOVING_POINT) {
+              let point = d3.select(this).datum()
+              let index = rates.indexOf(point)
+              if (index == 0 || index == rates.length - 1)  return
+
+              rates = rates.slice(0, index).concat(rates.slice(index + 1))
+              self.redrawRates(group, path, x, y, line, playingPoint)
+            }
+          })
+    this.updatePath(path, x, y, line, playingPoint)
+  },
+
+  updatePath(path, x, y, line, playingPoint) {
+    let video = this.video()
+    playingPath = []
+
+    path.attr('d', line(rates))
+    let node = path.node()
+    for (let i = 0; i < node.getTotalLength(); i++) {
+      let point = node.getPointAtLength(i)
+      playingPath.push(point)
+    }
+
+    let index = bisectPath(playingPath, x(video.currentTime), 1)
+    let point = playingPath[index]
+
+    playingPoint.attr('cx', point.x).attr('cy', point.y)
+    video.playbackRate = y.invert(point.y)
   },
 
   enableControl() {
@@ -120,18 +149,13 @@ let SlowFast = React.createClass({
     let panel = d3.select(this.refs.panel.getDOMNode())
     panel.attr('width', width).attr('height', height)
 
-    let path = panel.append('path').attr('d', line(rates)).attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'none')
-    let node = path.node()
-    for (let i = 0; i < node.getTotalLength(); i++) {
-      let point = node.getPointAtLength(i)
-      playingPath.push(point)
-    }
-    
-    let playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
+    let path = panel.append('path').attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'none')
+      , playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
+      , ratesGroup = panel.append('g')
+      , marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 4).attr('fill', 'black').attr('display', 'none')
+
+    this.redrawRates(ratesGroup, path, x, y, line, playingPoint)
     this.playingPoint = playingPoint
-    let ratesGroup = panel.append('g')
-    this.redrawRates(ratesGroup, x, y)
-    let marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 4).attr('fill', 'black').attr('display', 'none')
 
     panel
       .on('click', function() {
@@ -143,7 +167,7 @@ let SlowFast = React.createClass({
 
           let index = bisectRate(rates, time)
           rates = rates.slice(0, index).concat([{ time: time, value: rate }]).concat(rates.slice(index))
-          self.redrawRates(ratesGroup, x, y)
+          self.redrawRates(ratesGroup, path, x, y, line, playingPoint)
           self.setState({ adjustPoints: false })
         }
       })
@@ -191,22 +215,7 @@ let SlowFast = React.createClass({
         rate.value = newRate
 
         focusPoint.attr('cx', mouse[0]).attr('cy', mouse[1])
-        path.attr('d', line(rates))
-        
-        playingPath = []
-        node = path.node()
-        for (let i = 0; i < node.getTotalLength(); i++) {
-          let point = node.getPointAtLength(i)
-          playingPath.push(point)
-        }
-
-        index = bisectPath(playingPath, x(video.currentTime), 1)
-        let point = playingPath[index]
-
-        playingPoint.attr('cx', point.x).attr('cy', point.y)
-        video.playbackRate = y.invert(point.y)
-        video.currentTime = x.invert(point.x)
-
+        self.updatePath(path, x, y, line, playingPoint)
       })
       .on('mouseup', () => {
         focusPoint = null
