@@ -51,8 +51,14 @@ let SlowFast = React.createClass({
 
   componentDidMount() {
     let video = this.video()
-
-    fetch('http://vimeo-config.herokuapp.com/95251007.json')
+  
+    let idPattern = window.location.search.match(/(video=(\d+))/i)
+    let id = '95251007'
+    if (idPattern) {
+      id = idPattern[2]
+    }
+    
+    fetch(`http://vimeo-config.herokuapp.com/${id}.json`)
       .then(response => { return response.json() })
       .then(json => {
         video.src = json.request.files.h264.sd.url
@@ -85,6 +91,25 @@ let SlowFast = React.createClass({
       { time: 0.0, value: 1 },
       { time: video.duration, value: 1 }
     ]
+
+    let ratePattern = window.location.search.match(/(rates=((\d+\.\d+\:\d+\,*)+))/i)
+    if (ratePattern) {
+      let data = ratePattern[2]
+      let process = data.split(',').map(each => {
+        let value = each.split(':')
+        if (value.length < 2) { return { time: -1, value: -1 } } // Invalid data
+
+        if (value[0] < 0) value[0] = 0
+        if (value[0] > video.duration) value[0] = video.duration
+
+        if (value[1] < 0.5) value[1] = 0.5
+        if (value[1] > 4) value[1] = 4
+
+        return { time: value[0], value: value[1] }
+      })
+
+      if (process.length > 2) rates = process
+    }
 
     this.enableControl()
     this.setState({ loading: false })
@@ -138,12 +163,12 @@ let SlowFast = React.createClass({
   },
 
   enableControl() {
-    let width = 800
+    let video = this.video()
+      , width = 800
       , height = 200
-      , x = d3.scale.linear().domain([0, d3.max(rates, rate => { return rate.time })]).range([0, width])
+      , x = d3.scale.linear().domain([0, video.duration]).range([0, width])
       , y = d3.scale.linear().domain([0.5, 4]).range([height, 0])
       , line = d3.svg.line().interpolate('monotone').x(rate => { return x(rate.time) }).y(rate => { return y(rate.value) })
-      , video = this.video()
       , self = this
 
     let panel = d3.select(this.refs.panel.getDOMNode())
