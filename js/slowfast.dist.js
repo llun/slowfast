@@ -28290,7 +28290,9 @@ var SlowFast = React.createClass({
     video.playbackRate = y.invert(point.y);
 
     var location = window.location.toString();
-    location = location.substring(0, location.indexOf("?"));
+    if (location.indexOf("?") > 0) {
+      location = location.substring(0, location.indexOf("?"));
+    }
 
     var encodedRates = rates.map(function (each) {
       return "" + each.time + ":" + each.value;
