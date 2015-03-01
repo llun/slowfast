@@ -2,6 +2,8 @@ import React from 'react'
 import d3 from 'd3'
 import wg_fetch from 'whatwg-fetch'
 
+const ADDING_POINT = 'adding', REMOVING_POINT = 'removing'
+
 let rates = []
   , bisectRate = d3.bisector(datum => { return datum.time }).right
   , bisectPath = d3.bisector(datum => { return datum.x }).right
@@ -32,10 +34,19 @@ let SlowFast = React.createClass({
   addPoint() {
     this.video().pause()
 
-    if (this.state.adjustPoints == 'adding') {
+    if (this.state.adjustPoints == ADDING_POINT) {
       return this.setState({ adjustPoints: false })
     }
-    this.setState({ adjustPoints: 'adding' })
+    this.setState({ adjustPoints: ADDING_POINT })
+  },
+
+  removePoint() {
+    this.video().pause()
+
+    if (this.state.adjustPoints == REMOVING_POINT) {
+      return this.setState({ adjustPoints: false })
+    }
+    this.setState({ adjustPoints: REMOVING_POINT })
   },
 
   componentDidMount() {
@@ -124,7 +135,7 @@ let SlowFast = React.createClass({
 
     panel
       .on('click', function() {
-        if (self.state.adjustPoints == 'adding') {
+        if (self.state.adjustPoints == ADDING_POINT) {
           let mouse = d3.mouse(this)
 
           let time = x.invert(marker.attr('cx'))
@@ -137,7 +148,7 @@ let SlowFast = React.createClass({
         }
       })
       .on('mouseover', function() {
-        if (self.state.adjustPoints == 'adding') {
+        if (self.state.adjustPoints == ADDING_POINT) {
           let mouse = d3.mouse(this)
           marker.attr('display', 'inherit')
         }
@@ -153,7 +164,7 @@ let SlowFast = React.createClass({
 
         let index = bisectPath(playingPath, mouse[0], 1)
 
-        if (self.state.adjustPoints == 'adding') {
+        if (self.state.adjustPoints == ADDING_POINT) {
           let point = playingPath[index]
 
           if (point) {
@@ -236,7 +247,8 @@ let SlowFast = React.createClass({
               <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-primary" onClick={this.play}>Play</button>
               <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-default" onClick={this.pause}>Pause</button>
               <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-default" onClick={this.reset}>Reset</button>
-              <button disabled={this.state.loading} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
+              <button disabled={this.state.loading || (this.state.adjustPoints == REMOVING_POINT)} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
+              <button disabled={this.state.loading || (this.state.adjustPoints == ADDING_POINT)} className="btn btn-default" onClick={this.removePoint}>Remove Point</button>
             </div>
           </div>
 
