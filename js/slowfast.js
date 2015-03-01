@@ -54,7 +54,7 @@ let SlowFast = React.createClass({
   handleTimeUpdate(e) {
     let video = e.target
 
-    let index = bisectPath(playingPath, { x: this.scaleX(video.currentTime) }, 1)
+    let index = bisectPath(playingPath, this.scaleX(video.currentTime), 1)
     let point = playingPath[index]
 
     if (!point) { 
