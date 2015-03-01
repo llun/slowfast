@@ -28227,7 +28227,7 @@ var SlowFast = React.createClass({
         x = d3.scale.linear().domain([0, d3.max(rates, function (rate) {
       return rate.time;
     })]).range([0, width]),
-        y = d3.scale.linear().domain([0.25, 5]).range([height, 0]),
+        y = d3.scale.linear().domain([0.5, 4]).range([height, 0]),
         line = d3.svg.line().interpolate("monotone").x(function (rate) {
       return x(rate.time);
     }).y(function (rate) {
