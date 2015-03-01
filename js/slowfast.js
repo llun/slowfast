@@ -164,7 +164,9 @@ let SlowFast = React.createClass({
     video.playbackRate = y.invert(point.y)
 
     let location = window.location.toString()
-    location = location.substring(0, location.indexOf('?'))
+    if (location.indexOf('?') > 0) {
+      location = location.substring(0, location.indexOf('?'))
+    }
 
     let encodedRates = rates.map(each => {
       return `${each.time}:${each.value}`
