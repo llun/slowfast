@@ -28185,8 +28185,11 @@ var d3 = _interopRequire(require("d3"));
 var wg_fetch = _interopRequire(require("whatwg-fetch"));
 
 var rates = [],
-    bisect = d3.bisector(function (a, b) {
-  return a.x - b.x;
+    bisectRate = d3.bisector(function (datum) {
+  return datum.time;
+}).right,
+    bisectPath = d3.bisector(function (datum) {
+  return datum.x;
 }).right,
     focusPoint = null,
     playingPath = [];
@@ -28195,7 +28198,7 @@ var SlowFast = React.createClass({
   displayName: "SlowFast",
 
   getInitialState: function getInitialState() {
-    return { loading: true };
+    return { loading: true, adjustPoints: false };
   },
 
   video: function video() {
@@ -28212,6 +28215,15 @@ var SlowFast = React.createClass({
   reset: function reset(e) {
     this.video().pause();
     this.video().currentTime = 0;
+  },
+
+  addPoint: function addPoint() {
+    this.video().pause();
+
+    if (this.state.adjustPoints == "adding") {
+      return this.setState({ adjustPoints: false });
+    }
+    this.setState({ adjustPoints: "adding" });
   },
 
   componentDidMount: function componentDidMount() {
@@ -28232,7 +28244,7 @@ var SlowFast = React.createClass({
   handleTimeUpdate: function handleTimeUpdate(e) {
     var video = e.target;
 
-    var index = bisect(playingPath, { x: this.scaleX(video.currentTime) }, 1);
+    var index = bisectPath(playingPath, this.scaleX(video.currentTime), 1);
     var point = playingPath[index];
 
     if (!point) {
@@ -28254,6 +28266,18 @@ var SlowFast = React.createClass({
     this.setState({ loading: false });
   },
 
+  redrawRates: function redrawRates(group, x, y) {
+    var self = this;
+    group.selectAll(".ratePoint").remove();
+    group.selectAll(".ratePoint").data(rates).enter().append("circle").attr("class", "ratePoint").attr("cx", function (rate) {
+      return x(rate.time);
+    }).attr("cy", function (rate) {
+      return y(rate.value);
+    }).attr("r", 4).attr("fill", "white").attr("stroke", "black").attr("stroke-width", 2).on("mousedown", function () {
+      focusPoint = d3.select(this);
+    });
+  },
+
   enableControl: function enableControl() {
     var width = 800,
         height = 200,
@@ -28266,7 +28290,8 @@ var SlowFast = React.createClass({
     }).y(function (rate) {
       return y(rate.value);
     }),
-        video = this.video();
+        video = this.video(),
+        self = this;
 
     var panel = d3.select(this.refs.panel.getDOMNode());
     panel.attr("width", width).attr("height", height);
@@ -28278,19 +28303,29 @@ var SlowFast = React.createClass({
       playingPath.push(point);
     }
 
-    var marker = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].value)).attr("r", 4).attr("fill", "black").attr("display", "none");
     var playingPoint = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].value)).attr("r", 6).attr("fill", "white").attr("stroke", "red").attr("stroke-width", 2);
     this.playingPoint = playingPoint;
-    var points = panel.selectAll(".ratePoint").data(rates).enter().append("circle").attr("class", "ratePoint").attr("cx", function (rate) {
-      return x(rate.time);
-    }).attr("cy", function (rate) {
-      return y(rate.value);
-    }).attr("r", 4).attr("fill", "white").attr("stroke", "black").attr("stroke-width", 2).on("mousedown", function () {
-      focusPoint = d3.select(this);
-    });
+    var ratesGroup = panel.append("g");
+    this.redrawRates(ratesGroup, x, y);
+    var marker = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].value)).attr("r", 4).attr("fill", "black").attr("display", "none");
 
-    panel.on("mouseover", function () {
-      marker.attr("display", "inherit");
+    panel.on("click", function () {
+      if (self.state.adjustPoints == "adding") {
+        var mouse = d3.mouse(this);
+
+        var time = x.invert(marker.attr("cx"));
+        var rate = y.invert(marker.attr("cy"));
+
+        var index = bisectRate(rates, time);
+        rates = rates.slice(0, index).concat([{ time: time, value: rate }]).concat(rates.slice(index));
+        self.redrawRates(ratesGroup, x, y);
+        self.setState({ adjustPoints: false });
+      }
+    }).on("mouseover", function () {
+      if (self.state.adjustPoints == "adding") {
+        var mouse = d3.mouse(this);
+        marker.attr("display", "inherit");
+      }
     }).on("mouseout", function () {
       marker.attr("display", "none");
     }).on("mousemove", function () {
@@ -28299,10 +28334,15 @@ var SlowFast = React.createClass({
       var newTime = x.invert(mouse[0]);
       var newRate = y.invert(mouse[1]);
 
-      var index = bisect(playingPath, { x: x(video.currentTime) }, 1);
-      var point = playingPath[index];
+      var index = bisectPath(playingPath, mouse[0], 1);
 
-      marker.attr("cx", point.x).attr("cy", point.y);
+      if (self.state.adjustPoints == "adding") {
+        var _point = playingPath[index];
+
+        if (_point) {
+          marker.attr("cx", _point.x).attr("cy", _point.y);
+        }
+      }
 
       if (!focusPoint) return;
 
@@ -28328,12 +28368,12 @@ var SlowFast = React.createClass({
       playingPath = [];
       node = path.node();
       for (var i = 0; i < node.getTotalLength(); i++) {
-        var _point = node.getPointAtLength(i);
-        playingPath.push(_point);
+        var _point2 = node.getPointAtLength(i);
+        playingPath.push(_point2);
       }
 
-      index = bisect(playingPath, { x: x(video.currentTime) }, 1);
-      point = playingPath[index];
+      index = bisectPath(playingPath, x(video.currentTime), 1);
+      var point = playingPath[index];
 
       playingPoint.attr("cx", point.x).attr("cy", point.y);
       video.playbackRate = y.invert(point.y);
@@ -28393,18 +28433,23 @@ var SlowFast = React.createClass({
             { className: "col-xs-12" },
             React.createElement(
               "button",
-              { disabled: this.state.loading, className: "btn btn-primary", onClick: this.play },
+              { disabled: this.state.loading || this.state.adjustPoints, className: "btn btn-primary", onClick: this.play },
               "Play"
             ),
             React.createElement(
               "button",
-              { disabled: this.state.loading, className: "btn btn-default", onClick: this.pause },
+              { disabled: this.state.loading || this.state.adjustPoints, className: "btn btn-default", onClick: this.pause },
               "Pause"
             ),
             React.createElement(
               "button",
-              { disabled: this.state.loading, className: "btn btn-default", onClick: this.reset },
+              { disabled: this.state.loading || this.state.adjustPoints, className: "btn btn-default", onClick: this.reset },
               "Reset"
+            ),
+            React.createElement(
+              "button",
+              { disabled: this.state.loading, className: "btn btn-default", onClick: this.addPoint },
+              "Add Point"
             )
           )
         ),

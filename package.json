@@ -21,7 +21,7 @@
     ]
   },
   "scripts": {
-    "start": "watchify -o js/slowfast.dist.js -v -d ."
+    "start": "watchify -v -o js/slowfast.dist.js ."
   },
   "author": "Maythee Anegboonlap <null@llun.in.th>",
   "dependencies": {
