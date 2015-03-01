@@ -1,11 +1,11 @@
 import React from 'react'
 import d3 from 'd3'
+import wg_fetch from 'whatwg-fetch'
 
 let rates = []
   , bisect = d3.bisector((a, b) => { return a.x - b.x }).right
   , focusPoint = null
   , playingPath = []
-  , downTimer = null
 
 let SlowFast = React.createClass({
   getInitialState() {
@@ -30,8 +30,15 @@ let SlowFast = React.createClass({
 
   componentDidMount() {
     let video = this.video()
-    video.addEventListener('timeupdate', this.handleTimeUpdate)
-    video.addEventListener('durationchange', this.handleDuration)
+
+    fetch('http://vimeo-config.herokuapp.com/95251007.json')
+      .then(response => { return response.json() })
+      .then(json => {
+        video.src = json.request.files.h264.sd.url
+
+        video.addEventListener('timeupdate', this.handleTimeUpdate)
+        video.addEventListener('durationchange', this.handleDuration)
+      })
   },
 
   handleTimeUpdate(e) {
@@ -80,6 +87,7 @@ let SlowFast = React.createClass({
       playingPath.push(point)
     }
 
+    let marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 4).attr('fill', 'black').attr('display', 'none')
     let playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
     this.playingPoint = playingPoint
     let points = panel.selectAll('.ratePoint').data(rates)
@@ -98,22 +106,27 @@ let SlowFast = React.createClass({
 
 
     panel
-      .on('mousedown', function() {
-        clearTimeout(downTimer)
-        downTimer = setTimeout(function() {
-          console.log ('show menu')
-        }, 2000)
+      .on('mouseover', function() {
+        marker.attr('display', 'inherit')
+      })
+      .on('mouseout', function() {
+        marker.attr('display', 'none')
       })
       .on('mousemove', function() {
-        if (!focusPoint) return
-
         let mouse = d3.mouse(this)
-
-        let rate = focusPoint.datum()
-        let rateIndex = rates.indexOf(rate)
 
         let newTime = x.invert(mouse[0])
         let newRate = y.invert(mouse[1])
+
+        let index = bisect(playingPath, { x: x(video.currentTime) }, 1)
+        let point = playingPath[index]
+
+        marker.attr('cx', point.x).attr('cy', point.y)
+
+        if (!focusPoint) return
+
+        let rate = focusPoint.datum()
+        let rateIndex = rates.indexOf(rate)
 
         if (rateIndex > 0) {
           let previousRate = rates[rateIndex - 1]
@@ -138,8 +151,8 @@ let SlowFast = React.createClass({
           playingPath.push(point)
         }
 
-        let index = bisect(playingPath, { x: x(video.currentTime) }, 1)
-        let point = playingPath[index]
+        index = bisect(playingPath, { x: x(video.currentTime) }, 1)
+        point = playingPath[index]
 
         playingPoint.attr('cx', point.x).attr('cy', point.y)
         video.playbackRate = y.invert(point.y)
@@ -148,9 +161,6 @@ let SlowFast = React.createClass({
       })
       .on('mouseup', () => {
         focusPoint = null
-        if (downTimer) {
-          clearTimeout(downTimer)
-        }
       })
 
     this.scaleX = x
@@ -179,7 +189,7 @@ let SlowFast = React.createClass({
 
           <div className="row">
             <div className="col-xs-12">
-              <video ref="video" src="http://pdl.vimeocdn.com/11541/324/253488590.mp4?token2=1425138307_eeb3410cf095f773911b0240ca95806d&aksessionid=801766216ac073d9"/>
+              <video ref="video"/>
             </div>
           </div>
           

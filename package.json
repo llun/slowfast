@@ -27,6 +27,7 @@
   "dependencies": {
     "browserify": "^9.0.3",
     "d3": "^3.5.5",
-    "react": "^0.12.2"
+    "react": "^0.12.2",
+    "whatwg-fetch": "^0.7.0"
   }
 }
