@@ -80,7 +80,8 @@ let SlowFast = React.createClass({
   },
 
   redrawRates(group, x, y) {
-    console.log (rates)
+    let self = this
+    group.selectAll('.ratePoint').remove()
     group.selectAll('.ratePoint').data(rates)
       .enter()
         .append('circle')
@@ -189,7 +190,7 @@ let SlowFast = React.createClass({
         }
 
         index = bisectPath(playingPath, x(video.currentTime), 1)
-        point = playingPath[index]
+        let point = playingPath[index]
 
         playingPoint.attr('cx', point.x).attr('cy', point.y)
         video.playbackRate = y.invert(point.y)
