@@ -3,7 +3,7 @@ import d3 from 'd3'
 import wg_fetch from 'whatwg-fetch'
 
 let rates = []
-  , bisect = d3.bisector((a, b) => { return a.x - b.x }).right
+  , bisect = d3.bisector(datum => { return datum.x }).right
   , focusPoint = null
   , playingPath = []
 
@@ -30,7 +30,11 @@ let SlowFast = React.createClass({
 
   addPoint() {
     this.video().pause()
-    this.state.set({ adjustPoints: 'adding' })
+
+    if (this.state.adjustPoints == 'adding') {
+      return this.setState({ adjustPoints: false })
+    }
+    this.setState({ adjustPoints: 'adding' })
   },
 
   componentDidMount() {
@@ -81,6 +85,7 @@ let SlowFast = React.createClass({
       , y = d3.scale.linear().domain([0.5, 8]).range([height, 0])
       , line = d3.svg.line().interpolate('monotone').x(rate => { return x(rate.time) }).y(rate => { return y(rate.value) })
       , video = this.video()
+      , self = this
 
     let panel = d3.select(this.refs.panel.getDOMNode())
     panel.attr('width', width).attr('height', height)
@@ -111,9 +116,10 @@ let SlowFast = React.createClass({
 
     panel
       .on('mouseover', function() {
-        let mouse = d3.mouse(this)
-
-        marker.attr('display', 'inherit')
+        if (self.state.adjustPoints == 'adding') {
+          let mouse = d3.mouse(this)
+          marker.attr('display', 'inherit')
+        }
       })
       .on('mouseout', function() {
         marker.attr('display', 'none')
@@ -124,10 +130,15 @@ let SlowFast = React.createClass({
         let newTime = x.invert(mouse[0])
         let newRate = y.invert(mouse[1])
 
-        let index = bisect(playingPath, { x: mouse[0] }, 1)
-        let point = playingPath[index]
+        let index = bisect(playingPath, mouse[0], 1)
 
-        marker.attr('cx', point.x).attr('cy', point.y)
+        if (self.state.adjustPoints == 'adding') {
+          let point = playingPath[index]
+
+          if (point) {
+            marker.attr('cx', point.x).attr('cy', point.y)
+          }
+        }
 
         if (!focusPoint) return
 
@@ -157,7 +168,7 @@ let SlowFast = React.createClass({
           playingPath.push(point)
         }
 
-        index = bisect(playingPath, { x: x(video.currentTime) }, 1)
+        index = bisect(playingPath, x(video.currentTime), 1)
         point = playingPath[index]
 
         playingPoint.attr('cx', point.x).attr('cy', point.y)
@@ -202,8 +213,8 @@ let SlowFast = React.createClass({
           <div className="row">
             <div className="col-xs-12">
               <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-primary" onClick={this.play}>Play</button>
-              <button disabled={this.state.loading} className="btn btn-default" onClick={this.pause}>Pause</button>
-              <button disabled={this.state.loading} className="btn btn-default" onClick={this.reset}>Reset</button>
+              <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-default" onClick={this.pause}>Pause</button>
+              <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-default" onClick={this.reset}>Reset</button>
               <button disabled={this.state.loading} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
             </div>
           </div>
