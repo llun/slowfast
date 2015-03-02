@@ -64,6 +64,7 @@ let SlowFast = React.createClass({
       .then(response => { return response.json() })
       .then(json => {
         video.src = json.request.files.h264.sd.url
+        video.poster = json.video.thumbs.base
 
         video.addEventListener('timeupdate', this.handleTimeUpdate)
         video.addEventListener('durationchange', this.handleDuration)
@@ -296,7 +297,7 @@ let SlowFast = React.createClass({
               <button disabled={this.state.loading || (this.state.adjustPoints == REMOVING_POINT)} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
               <button disabled={this.state.loading || (this.state.adjustPoints == ADDING_POINT)} className="btn btn-default" onClick={this.removePoint}>Remove Point</button>
 
-              <input type="text" className="form-control" value={this.state.url} />
+              <input type="text" className="form-control" defaultValue={this.state.url} />
             </div>
           </div>
 
