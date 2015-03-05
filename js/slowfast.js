@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react/addons'
 import d3 from 'd3'
 import wg_fetch from 'whatwg-fetch'
 
@@ -12,21 +12,25 @@ let rates = []
 
 let SlowFast = React.createClass({
   getInitialState() {
-    return { loading: true, adjustPoints: false, url: '', video: '' }
+    return { loading: true, adjustPoints: false, url: '', video: '', playing: false }
   },
 
   video() {
     return this.refs.video.getDOMNode()
   },
   play(e) {
+    if (this.state.loading || this.state.adjustPoints) return
+
     this.video().play()
+    this.setState({ playing: true })
   },
 
   pause(e) {
     this.video().pause()
+    this.setState({ playing: false })
   },
 
-  reset(e) {
+  begin(e) {
     this.video().pause()
     this.video().currentTime = 0.0
   },
@@ -271,6 +275,11 @@ let SlowFast = React.createClass({
       boxSizing: 'content-box'
     }
 
+    let videoClassNames = React.addons.classSet({
+      video: true,
+      playing: this.state.playing
+    })
+
     return (
       <div className="container-fluid">
 
@@ -284,13 +293,13 @@ let SlowFast = React.createClass({
 
         <div className="row">
           <div className="col-xs-12 player">
-            <div className="video">
+            <div className={videoClassNames}>
               <video ref="video" />
               <div className="control">
-                <i className="fa fa-play play"></i>
+                <i className="fa fa-play play" onClick={this.play}></i>
                 
-                <i className="fa fa-step-backward begin"></i>
-                <i className="fa fa-pause pause"></i>
+                <i className="fa fa-step-backward begin" onClick={this.begin}></i>
+                <i className="fa fa-pause pause" onClick={this.pause}></i>
               </div>
             </div>
           </div>
@@ -298,9 +307,6 @@ let SlowFast = React.createClass({
         
         <div className="row">
           <div className="col-xs-12">
-            <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-primary" onClick={this.play}>Play</button>
-            <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-default" onClick={this.pause}>Pause</button>
-            <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-default" onClick={this.reset}>Reset</button>
             <button disabled={this.state.loading || (this.state.adjustPoints == REMOVING_POINT)} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
             <button disabled={this.state.loading || (this.state.adjustPoints == ADDING_POINT)} className="btn btn-default" onClick={this.removePoint}>Remove Point</button>
 
