@@ -176,6 +176,7 @@ let SlowFast = React.createClass({
     let encodedRates = rates.map(each => {
       return `${each.time}:${each.value}`
     }).join(',')
+
     this.setState({ url: `${location}?video=${this.state.video}&rates=${encodedRates}` })
   },
 
@@ -310,7 +311,7 @@ let SlowFast = React.createClass({
             <button disabled={this.state.loading || (this.state.adjustPoints == REMOVING_POINT)} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
             <button disabled={this.state.loading || (this.state.adjustPoints == ADDING_POINT)} className="btn btn-default" onClick={this.removePoint}>Remove Point</button>
 
-            <input type="text" className="form-control" defaultValue={this.state.url} />
+            <input type="text" className="form-control" readOnly value={this.state.url} />
           </div>
         </div>
 
