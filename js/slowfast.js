@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react/addons'
 import d3 from 'd3'
 import wg_fetch from 'whatwg-fetch'
 
@@ -12,21 +12,25 @@ let rates = []
 
 let SlowFast = React.createClass({
   getInitialState() {
-    return { loading: true, adjustPoints: false, url: '', video: '' }
+    return { loading: true, adjustPoints: false, url: '', video: '', playing: false }
   },
 
   video() {
     return this.refs.video.getDOMNode()
   },
   play(e) {
+    if (this.state.loading || this.state.adjustPoints) return
+
     this.video().play()
+    this.setState({ playing: true })
   },
 
   pause(e) {
     this.video().pause()
+    this.setState({ playing: false })
   },
 
-  reset(e) {
+  begin(e) {
     this.video().pause()
     this.video().currentTime = 0.0
   },
@@ -64,6 +68,7 @@ let SlowFast = React.createClass({
       .then(response => { return response.json() })
       .then(json => {
         video.src = json.request.files.h264.sd.url
+        video.poster = json.video.thumbs.base
 
         video.addEventListener('timeupdate', this.handleTimeUpdate)
         video.addEventListener('durationchange', this.handleDuration)
@@ -169,8 +174,9 @@ let SlowFast = React.createClass({
     }
 
     let encodedRates = rates.map(each => {
-      return `${each.time}:${each.value}`
+      return `${each.time.toFixed(2)}:${each.value.toFixed(2)}`
     }).join(',')
+
     this.setState({ url: `${location}?video=${this.state.video}&rates=${encodedRates}` })
   },
 
@@ -270,45 +276,53 @@ let SlowFast = React.createClass({
       boxSizing: 'content-box'
     }
 
+    let videoClassNames = React.addons.classSet({
+      video: true,
+      playing: this.state.playing
+    })
+
     return (
-      <div>
-        <nav className="navbar navbar-default navbar-static-top">
-          <div className="container">
-            <div className="navbar-header">
-              <a className="navbar-brand" href="#">Slow Fast</a>
-            </div>
+      <div className="container-fluid">
+
+        <div className="row">
+          <div className="col-xs-12">
+            <header className="text-center">
+              <h1>Slow<span className="fast">Fast</span></h1>
+            </header>
           </div>
-        </nav>
-
-        <div className="container">
-
-          <div className="row">
-            <div className="col-xs-12">
-              <video ref="video"/>
-            </div>
-          </div>
-          
-          <div className="row">
-            <div className="col-xs-12">
-              <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-primary" onClick={this.play}>Play</button>
-              <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-default" onClick={this.pause}>Pause</button>
-              <button disabled={this.state.loading || this.state.adjustPoints} className="btn btn-default" onClick={this.reset}>Reset</button>
-              <button disabled={this.state.loading || (this.state.adjustPoints == REMOVING_POINT)} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
-              <button disabled={this.state.loading || (this.state.adjustPoints == ADDING_POINT)} className="btn btn-default" onClick={this.removePoint}>Remove Point</button>
-
-              <input type="text" className="form-control" value={this.state.url} />
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-xs-12">
-              <svg ref="panel" style={panelStyle}></svg>
-            </div>
-          </div>
-
         </div>
 
-      </div>)
+        <div className="row">
+          <div className="col-xs-12 player">
+            <div className={videoClassNames}>
+              <video ref="video" />
+              <div className="control">
+                <i className="fa fa-play play" onClick={this.play}></i>
+                
+                <i className="fa fa-step-backward begin" onClick={this.begin}></i>
+                <i className="fa fa-pause pause" onClick={this.pause}></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="row">
+          <div className="col-xs-12">
+            <button disabled={this.state.loading || (this.state.adjustPoints == REMOVING_POINT)} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
+            <button disabled={this.state.loading || (this.state.adjustPoints == ADDING_POINT)} className="btn btn-default" onClick={this.removePoint}>Remove Point</button>
+
+            <input type="text" className="form-control" readOnly value={this.state.url} />
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-xs-12">
+            <svg ref="panel" style={panelStyle}></svg>
+          </div>
+        </div>
+
+      </div>
+      )
   }
 })
 
