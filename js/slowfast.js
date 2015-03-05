@@ -174,7 +174,7 @@ let SlowFast = React.createClass({
     }
 
     let encodedRates = rates.map(each => {
-      return `${each.time}:${each.value}`
+      return `${each.time.toFixed(2)}:${each.value.toFixed(2)}`
     }).join(',')
 
     this.setState({ url: `${location}?video=${this.state.video}&rates=${encodedRates}` })
