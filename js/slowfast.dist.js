@@ -29854,7 +29854,12 @@ var rates = [],
   return datum.x;
 }).right,
     focusPoint = null,
-    playingPath = [];
+    playingPath = [],
+    width = 800,
+    height = 200,
+    pointStrokeSize = 2,
+    playingPointSize = 20,
+    markerPointSize = 15;
 
 var SlowFast = React.createClass({
   displayName: "SlowFast",
@@ -29978,7 +29983,7 @@ var SlowFast = React.createClass({
       return x(rate.time);
     }).attr("cy", function (rate) {
       return y(rate.value);
-    }).attr("r", 4).attr("fill", "white").attr("stroke", "black").attr("stroke-width", 2).on("mousedown", function () {
+    }).attr("r", markerPointSize).attr("fill", "white").attr("stroke", "black").attr("stroke-width", pointStrokeSize).on("mousedown", function () {
       focusPoint = d3.select(this);
     }).on("click", function () {
       if (self.state.adjustPoints == REMOVING_POINT) {
@@ -30024,8 +30029,6 @@ var SlowFast = React.createClass({
 
   enableControl: function enableControl() {
     var video = this.video(),
-        width = 800,
-        height = 200,
         x = d3.scale.linear().domain([0, video.duration]).range([0, width]),
         y = d3.scale.linear().domain([0.5, 4]).range([height, 0]),
         line = d3.svg.line().interpolate("monotone").x(function (rate) {
@@ -30036,12 +30039,12 @@ var SlowFast = React.createClass({
         self = this;
 
     var panel = d3.select(this.refs.panel.getDOMNode());
-    panel.attr("width", width).attr("height", height);
+    panel.attr("preserveAspectRatio", "xMinYMin meet").attr("viewBox", "0 0 " + width + " " + height);
 
-    var path = panel.append("path").attr("stroke", "blue").attr("stroke-width", 2).attr("fill", "none"),
-        playingPoint = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].value)).attr("r", 6).attr("fill", "white").attr("stroke", "red").attr("stroke-width", 2),
+    var path = panel.append("path").attr("stroke", "blue").attr("stroke-width", pointStrokeSize).attr("fill", "none"),
+        playingPoint = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].value)).attr("r", playingPointSize).attr("fill", "white").attr("stroke", "red").attr("stroke-width", pointStrokeSize),
         ratesGroup = panel.append("g"),
-        marker = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].value)).attr("r", 4).attr("fill", "black").attr("display", "none");
+        marker = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].value)).attr("r", markerPointSize).attr("fill", "black").attr("display", "none");
 
     this.redrawRates(ratesGroup, path, x, y, line, playingPoint);
     this.playingPoint = playingPoint;
@@ -30110,12 +30113,6 @@ var SlowFast = React.createClass({
   },
 
   render: function render() {
-    var panelStyle = {
-      overflow: "visible",
-      border: "1px solid black",
-      boxSizing: "content-box"
-    };
-
     var videoClassNames = React.addons.classSet({
       video: true,
       playing: this.state.playing
@@ -30191,7 +30188,7 @@ var SlowFast = React.createClass({
         React.createElement(
           "div",
           { className: "col-xs-12" },
-          React.createElement("svg", { ref: "panel", style: panelStyle })
+          React.createElement("svg", { className: "slowfast-panel", ref: "panel" })
         )
       )
     );

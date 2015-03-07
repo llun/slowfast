@@ -9,6 +9,11 @@ let rates = []
   , bisectPath = d3.bisector(datum => { return datum.x }).right
   , focusPoint = null
   , playingPath = []
+  , width = 800
+  , height = 200
+  , pointStrokeSize = 2
+  , playingPointSize = 20
+  , markerPointSize = 15
 
 let SlowFast = React.createClass({
   getInitialState() {
@@ -131,10 +136,10 @@ let SlowFast = React.createClass({
           .attr('class', 'ratePoint')
           .attr('cx', rate => { return x(rate.time) })
           .attr('cy', rate => { return y(rate.value) })
-          .attr('r', 4)
+          .attr('r',  markerPointSize)
           .attr('fill', 'white')
           .attr('stroke', 'black')
-          .attr('stroke-width', 2)
+          .attr('stroke-width', pointStrokeSize)
           .on('mousedown', function() {
             focusPoint = d3.select(this)
           })
@@ -182,20 +187,20 @@ let SlowFast = React.createClass({
 
   enableControl() {
     let video = this.video()
-      , width = 800
-      , height = 200
       , x = d3.scale.linear().domain([0, video.duration]).range([0, width])
       , y = d3.scale.linear().domain([0.5, 4]).range([height, 0])
       , line = d3.svg.line().interpolate('monotone').x(rate => { return x(rate.time) }).y(rate => { return y(rate.value) })
       , self = this
 
     let panel = d3.select(this.refs.panel.getDOMNode())
-    panel.attr('width', width).attr('height', height)
+    panel
+      .attr("preserveAspectRatio", "xMinYMin meet")
+      .attr("viewBox", `0 0 ${width} ${height}`)
 
-    let path = panel.append('path').attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'none')
-      , playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 6).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', 2)
+    let path = panel.append('path').attr('stroke', 'blue').attr('stroke-width', pointStrokeSize).attr('fill', 'none')
+      , playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', playingPointSize).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', pointStrokeSize)
       , ratesGroup = panel.append('g')
-      , marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', 4).attr('fill', 'black').attr('display', 'none')
+      , marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', markerPointSize).attr('fill', 'black').attr('display', 'none')
 
     this.redrawRates(ratesGroup, path, x, y, line, playingPoint)
     this.playingPoint = playingPoint
@@ -270,12 +275,6 @@ let SlowFast = React.createClass({
   },
 
   render() {
-    let panelStyle = {
-      overflow: 'visible',
-      border: '1px solid black',
-      boxSizing: 'content-box'
-    }
-
     let videoClassNames = React.addons.classSet({
       video: true,
       playing: this.state.playing
@@ -317,7 +316,7 @@ let SlowFast = React.createClass({
 
         <div className="row">
           <div className="col-xs-12">
-            <svg ref="panel" style={panelStyle}></svg>
+            <svg className="slowfast-panel" ref="panel"></svg>
           </div>
         </div>
 
