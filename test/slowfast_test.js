@@ -12,7 +12,20 @@ describe('SlowFast', () => {
   let slowfast, video
 
   beforeEach(() => {
-    video = { play: sinon.stub(), pause: sinon.stub() }
+    video = { 
+      events: {},
+      play: sinon.stub(), 
+      pause: sinon.stub(),
+      addEventListener: (name, fn) => {
+        if (!video.events[name]) video.events[name] = []
+        video.events[name].push(fn)
+      },
+      trigger: (name) => {
+        video.events[name].forEach(fn => {
+          fn()
+        })
+      }
+    }
     slowfast = new SlowFast(video, [])
   })
 
