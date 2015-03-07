@@ -17,6 +17,10 @@ header .fast {
   position: relative;
 }
 
+.video video {
+  max-width: 100%;
+}
+
 .control {
   position: absolute;
   top: 0;
@@ -72,4 +76,11 @@ header .fast {
 .video.playing .pause,
 .video.playing .begin {
   display: inherit;
+}
+
+.slowfast-panel {
+  overflow: visible;
+  border: 1px solid black;
+  box-sizing: content-box;
+  width: 100%;
 }
