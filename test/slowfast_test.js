@@ -41,7 +41,7 @@ describe('SlowFast', () => {
         , end = { time: 2.0, rate: 0.5 }
 
       let rate = transition(start, end, 1.3)
-      expect(parseFloat(rate.toFixed(2))).to.equal(2.46)
+      expect(rate).to.equal(1.795)
     })
 
     it (`returns start rate when there's no end`, () => {
@@ -57,12 +57,12 @@ describe('SlowFast', () => {
         , end = { time: 0, rate: 4.2 }
 
       let rate = transition(start, end, 1.2)
-      expect(rate).to.be.null()
+      expect(rate).to.equal(null)
     })
 
     it (`returns null when no start and end`, () => {
       let rate = transition(null, null, 1.2)
-      expect(rate).to.be.null()
+      expect(rate).to.equal(null)
     })
 
     it (`returns start rate when passing no time`, () => {
