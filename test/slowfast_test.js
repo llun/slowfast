@@ -29,7 +29,7 @@ describe('SlowFast', () => {
     }
     slowfast = new SlowFast(video, [
       { time: 0.0, rate: 1.0 },
-      { time: 5.0, rate: 4.0 }
+      { time: 6.0, rate: 4.0 }
       ])
   })
 
@@ -55,7 +55,7 @@ describe('SlowFast', () => {
     video.currentTime = 2.5
     video.trigger('timeupdate')
 
-    expect(video.playbackRates).to.equal(1.5)
+    expect(video.playbackRate).to.equal(2.25)
   })
 
   describe(`update rates`, () => {
