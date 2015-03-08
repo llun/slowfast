@@ -76,13 +76,12 @@ let App = React.createClass({
         video.src = json.request.files.h264.sd.url
         video.poster = json.video.thumbs.base
         video.addEventListener('durationchange', this.handleDuration)
-
-        slowfast = new SlowFast(video, rates, this.transition)
       })
   },
 
   transition(start, end, time) {
     if (!end) { return start.rate }
+    if (!this.scaleX) { return start.rate }
 
     let index = bisectPath(playingPath, this.scaleX(time), 1)
     let point = playingPath[index]
@@ -96,10 +95,10 @@ let App = React.createClass({
   handleDuration(e) {
     let video = e.target
     rates = [
-      { time: 0.0, value: 1 },
-      { time: video.duration, value: 1 }
+      { time: 0.0, rate: 1 },
+      { time: video.duration, rate: 1 }
     ]
-    
+
     let ratePattern = window.location.search.match(/(rates=((\d+\.\d+\:\d+\,*)+))/i)
     if (ratePattern) {
       let data = ratePattern[2]
@@ -113,13 +112,13 @@ let App = React.createClass({
         if (value[1] < 0.5) value[1] = 0.5
         if (value[1] > 4) value[1] = 4
 
-        return { time: value[0], value: value[1] }
+        return { time: value[0], rate: value[1] }
       })
 
       if (process.length > 2) rates = process
     }
 
-    slowfast.updateRates(rates)
+    slowfast = new SlowFast(video, rates, this.transition)
     this.enableControl()
     this.setState({ loading: false })
   },
@@ -132,7 +131,7 @@ let App = React.createClass({
         .append('circle')
           .attr('class', 'ratePoint')
           .attr('cx', rate => { return x(rate.time) })
-          .attr('cy', rate => { return y(rate.value) })
+          .attr('cy', rate => { return y(rate.rate) })
           .attr('r',  markerPointSize)
           .attr('fill', 'white')
           .attr('stroke', 'black')
@@ -163,12 +162,7 @@ let App = React.createClass({
       let point = node.getPointAtLength(i)
       playingPath.push(point)
     }
-
-    let index = bisectPath(playingPath, x(video.currentTime), 1)
-    let point = playingPath[index]
-
-    playingPoint.attr('cx', point.x).attr('cy', point.y)
-    video.playbackRate = y.invert(point.y)
+    slowfast.updateRates(rates)
 
     let location = window.location.toString()
     if (location.indexOf('?') > 0) {
@@ -176,7 +170,7 @@ let App = React.createClass({
     }
 
     let encodedRates = rates.map(each => {
-      return `${each.time.toFixed(2)}:${each.value.toFixed(2)}`
+      return `${each.time.toFixed(2)}:${each.rate.toFixed(2)}`
     }).join(',')
 
     this.setState({ url: `${location}?video=${this.state.video}&rates=${encodedRates}` })
@@ -186,7 +180,7 @@ let App = React.createClass({
     let video = this.video()
       , x = d3.scale.linear().domain([0, video.duration]).range([0, width])
       , y = d3.scale.linear().domain([0.5, 4]).range([height, 0])
-      , line = d3.svg.line().interpolate('monotone').x(rate => { return x(rate.time) }).y(rate => { return y(rate.value) })
+      , line = d3.svg.line().interpolate('monotone').x(rate => { return x(rate.time) }).y(rate => { return y(rate.rate) })
       , self = this
 
     let panel = d3.select(this.refs.panel.getDOMNode())
@@ -195,9 +189,9 @@ let App = React.createClass({
       .attr("viewBox", `0 0 ${width} ${height}`)
 
     let path = panel.append('path').attr('stroke', 'blue').attr('stroke-width', pointStrokeSize).attr('fill', 'none')
-      , playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', playingPointSize).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', pointStrokeSize)
+      , playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].rate)).attr('r', playingPointSize).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', pointStrokeSize)
       , ratesGroup = panel.append('g')
-      , marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].value)).attr('r', markerPointSize).attr('fill', 'black').attr('display', 'none')
+      , marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].rate)).attr('r', markerPointSize).attr('fill', 'black').attr('display', 'none')
 
     this.redrawRates(ratesGroup, path, x, y, line, playingPoint)
     this.playingPoint = playingPoint
@@ -211,7 +205,7 @@ let App = React.createClass({
           let rate = y.invert(marker.attr('cy'))
 
           let index = bisectRate(rates, time)
-          rates = rates.slice(0, index).concat([{ time: time, value: rate }]).concat(rates.slice(index))
+          rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index))
           self.redrawRates(ratesGroup, path, x, y, line, playingPoint)
           self.setState({ adjustPoints: false })
         }
@@ -257,7 +251,7 @@ let App = React.createClass({
         }
 
         rate.time = newTime
-        rate.value = newRate
+        rate.rate = newRate
 
         focusPoint.attr('cx', mouse[0]).attr('cy', mouse[1])
         self.updatePath(path, x, y, line, playingPoint)
