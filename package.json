@@ -19,8 +19,9 @@
     "test": "test"
   },
   "scripts": {
-    "start": "watchify -v -o js/slowfast.dist.js .",
-    "test": "mocha --compilers js:babel/register"
+    "start": "watchify -v -o dist/slowfast.js .",
+    "test": "gulp test",
+    "build": "gulp"
   },
   "author": "Maythee Anegboonlap <null@llun.in.th>",
   "devDependencies": {
