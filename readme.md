@@ -37,6 +37,9 @@ slowfast.updateRates(rates.concat([{ time: 4.0, rate: 3.0 }]))
 slowfast.play()
 ```
 
+## Demo
+At [Github Page](http://llun.github.io/slowfast/)
+
 # License
 
 [MIT](http://llun.mit-license.org/)
