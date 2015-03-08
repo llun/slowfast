@@ -11,8 +11,10 @@ class SlowFast {
     })
     this.currentBlock = 0
 
-    this.video = video
-    video.addEventListener('timeupdate', this.handleTimeUpdate.bind(this))
+    if (video) {
+      this.video = video
+      video.addEventListener('timeupdate', this.handleTimeUpdate.bind(this))
+    }
   }
 
   play() {
@@ -31,8 +33,14 @@ class SlowFast {
   }
 
   updateRates(rates) {
-    this.rates = rates
     this.pause()
+    
+    this.rates = rates
+    this.blocks = rates.map((rate, index) => {
+      return { start: rate, end: rates[index+1] }
+    })
+
+    this.handleTimeUpdate()
   }
 
   handleTimeUpdate() {
