@@ -1,0 +1,86 @@
+header .fast {
+  font-style: italic;
+  font-weight: lighter;
+}
+
+.player {
+  background: black;
+  
+  display: flex;
+  display: -webkit-flex;
+
+  justify-content: center;
+  -webkit-justify-content: center;
+}
+
+.video {
+  position: relative;
+}
+
+.video video {
+  max-width: 100%;
+}
+
+.control {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  background-color: rgba(255, 255, 255, 0.2);
+
+  width: 100%;
+  height: 100%;
+  
+  display: flex;
+  display: -webkit-flex;
+
+  justify-content: center;
+  -webkit-justify-content: center;
+
+  align-items: center;
+  -webkit-align-items: center;
+}
+
+.video.playing .control {
+  visibility: hidden;
+}
+
+.video.playing:hover .control {
+  visibility: visible;
+}
+
+.control .play, 
+.control .pause, 
+.control .begin {
+  font-size: 20px;
+  padding: 20px 22.5px 20px 22.5px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.control .play {
+  padding: 20px 20px 20px 25px;
+}
+
+.video.playing .play {
+  display: none;
+}
+
+.video .pause,
+.video .begin {
+  display: none;
+}
+
+.video.playing .pause,
+.video.playing .begin {
+  display: inherit;
+}
+
+.slowfast-panel {
+  overflow: visible;
+  border: 1px solid black;
+  box-sizing: content-box;
+  width: 100%;
+}

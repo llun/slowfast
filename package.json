@@ -9,7 +9,7 @@
   "keywords": [
     "video"
   ],
-  "main": "lib/slowfast.js",
+  "main": "js/app.js",
   "browserify": {
     "transform": [
       "babelify"
@@ -19,7 +19,7 @@
     "test": "test"
   },
   "scripts": {
-    "start": "watchify -v -o dist/slowfast.js .",
+    "start": "watchify -v -o js/app.dist.js .",
     "test": "gulp test",
     "build": "gulp"
   },
@@ -38,5 +38,10 @@
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^2.4.0"
+  },
+  "dependencies": {
+    "d3": "^3.5.5",
+    "react": "^0.12.2",
+    "whatwg-fetch": "^0.7.0"
   }
 }
