@@ -21,12 +21,16 @@ describe('SlowFast', () => {
         video.events[name].push(fn)
       },
       trigger: (name) => {
+        if (!video.events[name]) video.events[name] = []
         video.events[name].forEach(fn => {
           fn()
         })
       }
     }
-    slowfast = new SlowFast(video, [])
+    slowfast = new SlowFast(video, [
+      { time: 0.0, rate: 1.0 },
+      { time: 5.0, rate: 4.0 }
+      ])
   })
 
   it (`plays video`, () => {
@@ -45,6 +49,13 @@ describe('SlowFast', () => {
 
     expect(video.pause).to.have.been.called
     expect(video.currentTime).to.equal(0)
+  })
+
+  it (`updates video playbackRates while playing`, () => {
+    video.currentTime = 2.5
+    video.trigger('timeupdate')
+
+    expect(video.playbackRates).to.equal(1.5)
   })
 
   describe(`update rates`, () => {
