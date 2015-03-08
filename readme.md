@@ -1,6 +1,6 @@
 # SlowFast with JS Experimental
 
-SlowFast is a library splitting video for playing different playback rate. The idea comes from [iOS applicationthe same name as this library.](http://www.studioneat.com/products/slowfast)
+SlowFast is a library splitting video for playing different playback rate. The idea comes from [iOS application the same name as this library.](http://www.studioneat.com/products/slowfast)
 
 ## Usage
 
