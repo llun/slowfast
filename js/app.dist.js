@@ -30051,8 +30051,8 @@ var App = React.createClass({
     return this.scaleY.invert(point.y);
   },
 
-  handleDuration: function handleDuration(e) {
-    var video = e.target;
+  handleDuration: function handleDuration() {
+    var video = this.video();
     rates = [{ time: 0, rate: 1 }, { time: video.duration, rate: 1 }];
 
     var ratePattern = window.location.search.match(/(rates=((\d+\.\d+\:\d+\,*)+))/i);
@@ -30128,6 +30128,8 @@ var App = React.createClass({
   },
 
   enableControl: function enableControl() {
+    width = this.refs.panel.getDOMNode().clientWidth;
+
     var video = this.video(),
         x = d3.scale.linear().domain([0, video.duration]).range([0, width]),
         y = d3.scale.linear().domain([0.5, 4]).range([height, 0]),
