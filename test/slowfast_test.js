@@ -2,7 +2,7 @@ import chai from 'chai'
 import sinon from 'sinon'
 import sinon_chai from 'sinon-chai'
 
-import SlowFast from '../js/slowfast'
+import SlowFast from '../lib/slowfast'
 
 const expect = chai.expect
 chai.use(sinon_chai)

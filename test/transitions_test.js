@@ -1,5 +1,5 @@
 import chai from 'chai'
-import transitions from '../js/transitions'
+import transitions from '../lib/transitions'
 
 const expect = chai.expect
 
