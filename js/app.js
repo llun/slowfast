@@ -1,6 +1,7 @@
 import React from 'react/addons'
 import d3 from 'd3'
 import wg_fetch from 'whatwg-fetch'
+import SlowFast from './slowfast'
 
 const ADDING_POINT = 'adding', REMOVING_POINT = 'removing'
 
@@ -14,8 +15,9 @@ let rates = []
   , pointStrokeSize = 2
   , playingPointSize = 20
   , markerPointSize = 15
+  , slowfast = null
 
-let SlowFast = React.createClass({
+let App = React.createClass({
   getInitialState() {
     return { loading: true, adjustPoints: false, url: '', video: '', playing: false }
   },
@@ -26,22 +28,21 @@ let SlowFast = React.createClass({
   play(e) {
     if (this.state.loading || this.state.adjustPoints) return
 
-    this.video().play()
+    slowfast.play()
     this.setState({ playing: true })
   },
 
   pause(e) {
-    this.video().pause()
+    slowfast.pause()
     this.setState({ playing: false })
   },
 
   begin(e) {
-    this.video().pause()
-    this.video().currentTime = 0.0
+    slowfast.reset()
   },
 
   addPoint() {
-    this.video().pause()
+    slowfast.pause()
 
     if (this.state.adjustPoints == ADDING_POINT) {
       return this.setState({ adjustPoints: false })
@@ -50,7 +51,7 @@ let SlowFast = React.createClass({
   },
 
   removePoint() {
-    this.video().pause()
+    slowfast.pause()
 
     if (this.state.adjustPoints == REMOVING_POINT) {
       return this.setState({ adjustPoints: false })
@@ -74,27 +75,22 @@ let SlowFast = React.createClass({
       .then(json => {
         video.src = json.request.files.h264.sd.url
         video.poster = json.video.thumbs.base
-
-        video.addEventListener('timeupdate', this.handleTimeUpdate)
         video.addEventListener('durationchange', this.handleDuration)
+
+        slowfast = new SlowFast(video, rates, this.transition)
       })
   },
 
-  handleTimeUpdate(e) {
-    let video = e.target
+  transition(start, end, time) {
+    if (!end) { return start.rate }
 
-    let index = bisectPath(playingPath, this.scaleX(video.currentTime), 1)
+    let index = bisectPath(playingPath, this.scaleX(time), 1)
     let point = playingPath[index]
 
-    if (!point) { 
-      this.video().pause()
-      return
-    }
+    if (!point) { return start.rate }
 
     this.playingPoint.attr('cx', point.x).attr('cy', point.y)
-    video.playbackRate = this.scaleY.invert(point.y)
-
-    let progress = video.currentTime / video.duration * 100
+    return this.scaleY.invert(point.y)
   },
 
   handleDuration(e) {
@@ -103,7 +99,7 @@ let SlowFast = React.createClass({
       { time: 0.0, value: 1 },
       { time: video.duration, value: 1 }
     ]
-
+    
     let ratePattern = window.location.search.match(/(rates=((\d+\.\d+\:\d+\,*)+))/i)
     if (ratePattern) {
       let data = ratePattern[2]
@@ -123,6 +119,7 @@ let SlowFast = React.createClass({
       if (process.length > 2) rates = process
     }
 
+    slowfast.updateRates(rates)
     this.enableControl()
     this.setState({ loading: false })
   },
@@ -326,6 +323,6 @@ let SlowFast = React.createClass({
 })
 
 React.render(
-  <SlowFast />,
+  <App />,
   document.querySelector('body')
   )

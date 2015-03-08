@@ -65,6 +65,19 @@ describe('SlowFast', () => {
       expect(video.pause).to.have.been.called
     })
 
+    it (`calculate new rate after update`, () => {
+      video.playbackRate = 2.25
+      video.currentTime = 2.5
+      slowfast.updateRates([
+        { time: 0, rate: 1.0 },
+        { time: 3, rate: 0.5 },
+        { time: 6.0, rate: 4.0}
+        ])
+
+      expect(video.currentTime).to.equal(2.5)
+      expect(parseFloat(video.playbackRate.toFixed(2))).to.equal(0.58)
+    })
+
   })
 
 })
