@@ -9,25 +9,34 @@
   "keywords": [
     "video"
   ],
-  "devDependencies": {
-    "babel": "^4.5.1",
-    "babelify": "^5.0.3",
-    "watchify": "^2.4.0"
-  },
-  "main": "js/slowfast.js",
+  "main": "lib/slowfast.js",
   "browserify": {
     "transform": [
       "babelify"
     ]
   },
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
-    "start": "watchify -v -o js/slowfast.dist.js ."
+    "start": "watchify -v -o dist/slowfast.js .",
+    "test": "gulp test",
+    "build": "gulp"
   },
   "author": "Maythee Anegboonlap <null@llun.in.th>",
-  "dependencies": {
+  "devDependencies": {
+    "babel": "^4.5.1",
+    "babelify": "^5.0.3",
     "browserify": "^9.0.3",
-    "d3": "^3.5.5",
-    "react": "^0.12.2",
-    "whatwg-fetch": "^0.7.0"
+    "chai": "^2.1.1",
+    "gulp": "^3.8.11",
+    "gulp-babel": "^4.0.0",
+    "gulp-mocha": "^2.0.0",
+    "mocha": "^2.2.0",
+    "sinon": "^1.13.0",
+    "sinon-chai": "^2.7.0",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^2.4.0"
   }
 }
