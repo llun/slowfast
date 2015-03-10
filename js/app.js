@@ -1,7 +1,7 @@
 import React from 'react/addons'
 import d3 from 'd3'
 import wg_fetch from 'whatwg-fetch'
-import SlowFast from '../lib/slowfast'
+import SlowFast from 'slowfast'
 
 const ADDING_POINT = 'adding', REMOVING_POINT = 'removing'
 

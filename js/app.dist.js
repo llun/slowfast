@@ -1,165 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/Users/llun/Documents/slowfast/lib/slowfast.js":[function(require,module,exports){
-"use strict";
-
-var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-
-var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-
-var transitions = _interopRequire(require("./transitions"));
-
-var SlowFast = (function () {
-  function SlowFast(video, rates, transition) {
-    _classCallCheck(this, SlowFast);
-
-    this.rates = rates || [];
-    this.transition = transition || transitions.linear;
-
-    this.blocks = rates.map(function (rate, index) {
-      return { start: rate, end: rates[index + 1] };
-    });
-    this.currentBlock = 0;
-
-    if (video) {
-      this.video = video;
-      video.addEventListener("timeupdate", this.handleTimeUpdate.bind(this));
-    }
-  }
-
-  _createClass(SlowFast, {
-    play: {
-      value: function play() {
-        if (this.video) this.video.play();
-      }
-    },
-    pause: {
-      value: function pause() {
-        if (this.video) this.video.pause();
-      }
-    },
-    reset: {
-      value: function reset() {
-        if (this.video) {
-          this.video.currentTime = 0;
-          this.video.pause();
-        }
-      }
-    },
-    updateRates: {
-      value: function updateRates(rates) {
-        this.pause();
-
-        this.rates = rates;
-        this.blocks = rates.map(function (rate, index) {
-          return { start: rate, end: rates[index + 1] };
-        });
-
-        this.handleTimeUpdate();
-      }
-    },
-    handleTimeUpdate: {
-      value: function handleTimeUpdate() {
-        var video = this.video,
-            transition = this.transition,
-            blocks = this.blocks,
-            currentTime = video.currentTime;
-
-        var block = blocks[this.currentBlock];
-        if (block.end && currentTime >= block.end.time) {
-          this.currentBlock++;
-        }
-
-        video.playbackRate = transition(block.start, block.end, currentTime);
-      }
-    }
-  });
-
-  return SlowFast;
-})();
-
-module.exports = SlowFast;
-
-},{"./transitions":"/Users/llun/Documents/slowfast/lib/transitions.js"}],"/Users/llun/Documents/slowfast/lib/transitions.js":[function(require,module,exports){
-"use strict";
-
-module.exports = {
-  linear: function linear(start, end, time) {
-    if (!start) {
-      return null;
-    }if (!end || !time) {
-      return start.rate;
-    }var totalTimeInBlock = end.time - start.time,
-        timeInBlock = time - start.time;
-    if (start.rate < end.rate) {
-      return Math.tan(Math.atan((end.rate - start.rate) / totalTimeInBlock)) * timeInBlock + start.rate;
-    }
-
-    return Math.tan(Math.atan((start.rate - end.rate) / totalTimeInBlock)) * (totalTimeInBlock - timeInBlock) + end.rate;
-  }
-};
-
-},{}],"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-var queue = [];
-var draining = false;
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    draining = true;
-    var currentQueue;
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        var i = -1;
-        while (++i < len) {
-            currentQueue[i]();
-        }
-        len = queue.length;
-    }
-    draining = false;
-}
-process.nextTick = function (fun) {
-    queue.push(fun);
-    if (!draining) {
-        setTimeout(drainQueue, 0);
-    }
-};
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],"/Users/llun/Documents/slowfast/node_modules/d3/d3.js":[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/Users/llun/Documents/slowfast/node_modules/d3/d3.js":[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.5"
@@ -10028,7 +9867,7 @@ var CSSCore = {
 module.exports = CSSCore;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/CSSProperty.js":[function(require,module,exports){
+},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/CSSProperty.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -10282,7 +10121,7 @@ var CSSPropertyOperations = {
 module.exports = CSSPropertyOperations;
 
 }).call(this,require('_process'))
-},{"./CSSProperty":"/Users/llun/Documents/slowfast/node_modules/react/lib/CSSProperty.js","./ExecutionEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js","./camelizeStyleName":"/Users/llun/Documents/slowfast/node_modules/react/lib/camelizeStyleName.js","./dangerousStyleValue":"/Users/llun/Documents/slowfast/node_modules/react/lib/dangerousStyleValue.js","./hyphenateStyleName":"/Users/llun/Documents/slowfast/node_modules/react/lib/hyphenateStyleName.js","./memoizeStringOnly":"/Users/llun/Documents/slowfast/node_modules/react/lib/memoizeStringOnly.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/CallbackQueue.js":[function(require,module,exports){
+},{"./CSSProperty":"/Users/llun/Documents/slowfast/node_modules/react/lib/CSSProperty.js","./ExecutionEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js","./camelizeStyleName":"/Users/llun/Documents/slowfast/node_modules/react/lib/camelizeStyleName.js","./dangerousStyleValue":"/Users/llun/Documents/slowfast/node_modules/react/lib/dangerousStyleValue.js","./hyphenateStyleName":"/Users/llun/Documents/slowfast/node_modules/react/lib/hyphenateStyleName.js","./memoizeStringOnly":"/Users/llun/Documents/slowfast/node_modules/react/lib/memoizeStringOnly.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/CallbackQueue.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -10382,7 +10221,7 @@ PooledClass.addPoolingTo(CallbackQueue);
 module.exports = CallbackQueue;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/llun/Documents/slowfast/node_modules/react/lib/PooledClass.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ChangeEventPlugin.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/llun/Documents/slowfast/node_modules/react/lib/PooledClass.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ChangeEventPlugin.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -11223,7 +11062,7 @@ var DOMChildrenOperations = {
 module.exports = DOMChildrenOperations;
 
 }).call(this,require('_process'))
-},{"./Danger":"/Users/llun/Documents/slowfast/node_modules/react/lib/Danger.js","./ReactMultiChildUpdateTypes":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMultiChildUpdateTypes.js","./getTextContentAccessor":"/Users/llun/Documents/slowfast/node_modules/react/lib/getTextContentAccessor.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMProperty.js":[function(require,module,exports){
+},{"./Danger":"/Users/llun/Documents/slowfast/node_modules/react/lib/Danger.js","./ReactMultiChildUpdateTypes":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMultiChildUpdateTypes.js","./getTextContentAccessor":"/Users/llun/Documents/slowfast/node_modules/react/lib/getTextContentAccessor.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMProperty.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -11522,7 +11361,7 @@ var DOMProperty = {
 module.exports = DOMProperty;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMPropertyOperations.js":[function(require,module,exports){
+},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMPropertyOperations.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -11719,7 +11558,7 @@ var DOMPropertyOperations = {
 module.exports = DOMPropertyOperations;
 
 }).call(this,require('_process'))
-},{"./DOMProperty":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMProperty.js","./escapeTextForBrowser":"/Users/llun/Documents/slowfast/node_modules/react/lib/escapeTextForBrowser.js","./memoizeStringOnly":"/Users/llun/Documents/slowfast/node_modules/react/lib/memoizeStringOnly.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/Danger.js":[function(require,module,exports){
+},{"./DOMProperty":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMProperty.js","./escapeTextForBrowser":"/Users/llun/Documents/slowfast/node_modules/react/lib/escapeTextForBrowser.js","./memoizeStringOnly":"/Users/llun/Documents/slowfast/node_modules/react/lib/memoizeStringOnly.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/Danger.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -11905,7 +11744,7 @@ var Danger = {
 module.exports = Danger;
 
 }).call(this,require('_process'))
-},{"./ExecutionEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js","./createNodesFromMarkup":"/Users/llun/Documents/slowfast/node_modules/react/lib/createNodesFromMarkup.js","./emptyFunction":"/Users/llun/Documents/slowfast/node_modules/react/lib/emptyFunction.js","./getMarkupWrap":"/Users/llun/Documents/slowfast/node_modules/react/lib/getMarkupWrap.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/DefaultEventPluginOrder.js":[function(require,module,exports){
+},{"./ExecutionEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js","./createNodesFromMarkup":"/Users/llun/Documents/slowfast/node_modules/react/lib/createNodesFromMarkup.js","./emptyFunction":"/Users/llun/Documents/slowfast/node_modules/react/lib/emptyFunction.js","./getMarkupWrap":"/Users/llun/Documents/slowfast/node_modules/react/lib/getMarkupWrap.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/DefaultEventPluginOrder.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -12247,7 +12086,7 @@ var EventListener = {
 module.exports = EventListener;
 
 }).call(this,require('_process'))
-},{"./emptyFunction":"/Users/llun/Documents/slowfast/node_modules/react/lib/emptyFunction.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginHub.js":[function(require,module,exports){
+},{"./emptyFunction":"/Users/llun/Documents/slowfast/node_modules/react/lib/emptyFunction.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginHub.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -12523,7 +12362,7 @@ var EventPluginHub = {
 module.exports = EventPluginHub;
 
 }).call(this,require('_process'))
-},{"./EventPluginRegistry":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginRegistry.js","./EventPluginUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginUtils.js","./accumulateInto":"/Users/llun/Documents/slowfast/node_modules/react/lib/accumulateInto.js","./forEachAccumulated":"/Users/llun/Documents/slowfast/node_modules/react/lib/forEachAccumulated.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginRegistry.js":[function(require,module,exports){
+},{"./EventPluginRegistry":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginRegistry.js","./EventPluginUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginUtils.js","./accumulateInto":"/Users/llun/Documents/slowfast/node_modules/react/lib/accumulateInto.js","./forEachAccumulated":"/Users/llun/Documents/slowfast/node_modules/react/lib/forEachAccumulated.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginRegistry.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -12803,7 +12642,7 @@ var EventPluginRegistry = {
 module.exports = EventPluginRegistry;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginUtils.js":[function(require,module,exports){
+},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginUtils.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -13024,7 +12863,7 @@ var EventPluginUtils = {
 module.exports = EventPluginUtils;
 
 }).call(this,require('_process'))
-},{"./EventConstants":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventConstants.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPropagators.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventConstants.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPropagators.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -13166,7 +13005,7 @@ var EventPropagators = {
 module.exports = EventPropagators;
 
 }).call(this,require('_process'))
-},{"./EventConstants":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventConstants.js","./EventPluginHub":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginHub.js","./accumulateInto":"/Users/llun/Documents/slowfast/node_modules/react/lib/accumulateInto.js","./forEachAccumulated":"/Users/llun/Documents/slowfast/node_modules/react/lib/forEachAccumulated.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventConstants.js","./EventPluginHub":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginHub.js","./accumulateInto":"/Users/llun/Documents/slowfast/node_modules/react/lib/accumulateInto.js","./forEachAccumulated":"/Users/llun/Documents/slowfast/node_modules/react/lib/forEachAccumulated.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -13600,7 +13439,7 @@ var LinkedValueUtils = {
 module.exports = LinkedValueUtils;
 
 }).call(this,require('_process'))
-},{"./ReactPropTypes":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypes.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/LocalEventTrapMixin.js":[function(require,module,exports){
+},{"./ReactPropTypes":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypes.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/LocalEventTrapMixin.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -13650,7 +13489,7 @@ var LocalEventTrapMixin = {
 module.exports = LocalEventTrapMixin;
 
 }).call(this,require('_process'))
-},{"./ReactBrowserEventEmitter":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserEventEmitter.js","./accumulateInto":"/Users/llun/Documents/slowfast/node_modules/react/lib/accumulateInto.js","./forEachAccumulated":"/Users/llun/Documents/slowfast/node_modules/react/lib/forEachAccumulated.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/MobileSafariClickEventPlugin.js":[function(require,module,exports){
+},{"./ReactBrowserEventEmitter":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserEventEmitter.js","./accumulateInto":"/Users/llun/Documents/slowfast/node_modules/react/lib/accumulateInto.js","./forEachAccumulated":"/Users/llun/Documents/slowfast/node_modules/react/lib/forEachAccumulated.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/MobileSafariClickEventPlugin.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -13871,7 +13710,7 @@ var PooledClass = {
 module.exports = PooledClass;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/React.js":[function(require,module,exports){
+},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/React.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -14059,7 +13898,7 @@ React.version = '0.12.2';
 module.exports = React;
 
 }).call(this,require('_process'))
-},{"./DOMPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMPropertyOperations.js","./EventPluginUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginUtils.js","./ExecutionEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js","./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./ReactChildren":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactChildren.js","./ReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponent.js","./ReactCompositeComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCompositeComponent.js","./ReactContext":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactContext.js","./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./ReactDOM":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOM.js","./ReactDOMComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMComponent.js","./ReactDefaultInjection":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDefaultInjection.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactElementValidator":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElementValidator.js","./ReactInstanceHandles":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactInstanceHandles.js","./ReactLegacyElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLegacyElement.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./ReactMultiChild":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMultiChild.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./ReactPropTypes":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypes.js","./ReactServerRendering":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactServerRendering.js","./ReactTextComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactTextComponent.js","./deprecated":"/Users/llun/Documents/slowfast/node_modules/react/lib/deprecated.js","./onlyChild":"/Users/llun/Documents/slowfast/node_modules/react/lib/onlyChild.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserComponentMixin.js":[function(require,module,exports){
+},{"./DOMPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMPropertyOperations.js","./EventPluginUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginUtils.js","./ExecutionEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js","./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./ReactChildren":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactChildren.js","./ReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponent.js","./ReactCompositeComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCompositeComponent.js","./ReactContext":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactContext.js","./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./ReactDOM":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOM.js","./ReactDOMComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMComponent.js","./ReactDefaultInjection":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDefaultInjection.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactElementValidator":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElementValidator.js","./ReactInstanceHandles":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactInstanceHandles.js","./ReactLegacyElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLegacyElement.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./ReactMultiChild":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMultiChild.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./ReactPropTypes":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypes.js","./ReactServerRendering":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactServerRendering.js","./ReactTextComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactTextComponent.js","./deprecated":"/Users/llun/Documents/slowfast/node_modules/react/lib/deprecated.js","./onlyChild":"/Users/llun/Documents/slowfast/node_modules/react/lib/onlyChild.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserComponentMixin.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -14102,7 +13941,7 @@ var ReactBrowserComponentMixin = {
 module.exports = ReactBrowserComponentMixin;
 
 }).call(this,require('_process'))
-},{"./ReactEmptyComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactEmptyComponent.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserEventEmitter.js":[function(require,module,exports){
+},{"./ReactEmptyComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactEmptyComponent.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserEventEmitter.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -14659,7 +14498,7 @@ var ReactCSSTransitionGroupChild = React.createClass({
 module.exports = ReactCSSTransitionGroupChild;
 
 }).call(this,require('_process'))
-},{"./CSSCore":"/Users/llun/Documents/slowfast/node_modules/react/lib/CSSCore.js","./React":"/Users/llun/Documents/slowfast/node_modules/react/lib/React.js","./ReactTransitionEvents":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactTransitionEvents.js","./onlyChild":"/Users/llun/Documents/slowfast/node_modules/react/lib/onlyChild.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactChildren.js":[function(require,module,exports){
+},{"./CSSCore":"/Users/llun/Documents/slowfast/node_modules/react/lib/CSSCore.js","./React":"/Users/llun/Documents/slowfast/node_modules/react/lib/React.js","./ReactTransitionEvents":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactTransitionEvents.js","./onlyChild":"/Users/llun/Documents/slowfast/node_modules/react/lib/onlyChild.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactChildren.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -14809,7 +14648,7 @@ var ReactChildren = {
 module.exports = ReactChildren;
 
 }).call(this,require('_process'))
-},{"./PooledClass":"/Users/llun/Documents/slowfast/node_modules/react/lib/PooledClass.js","./traverseAllChildren":"/Users/llun/Documents/slowfast/node_modules/react/lib/traverseAllChildren.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponent.js":[function(require,module,exports){
+},{"./PooledClass":"/Users/llun/Documents/slowfast/node_modules/react/lib/PooledClass.js","./traverseAllChildren":"/Users/llun/Documents/slowfast/node_modules/react/lib/traverseAllChildren.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponent.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -15252,7 +15091,7 @@ var ReactComponent = {
 module.exports = ReactComponent;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactOwner.js","./ReactUpdates":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactUpdates.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./keyMirror":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyMirror.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponentBrowserEnvironment.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactOwner.js","./ReactUpdates":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactUpdates.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./keyMirror":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyMirror.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponentBrowserEnvironment.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -15374,7 +15213,7 @@ var ReactComponentBrowserEnvironment = {
 module.exports = ReactComponentBrowserEnvironment;
 
 }).call(this,require('_process'))
-},{"./ReactDOMIDOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMIDOperations.js","./ReactMarkupChecksum":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMarkupChecksum.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./ReactReconcileTransaction":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactReconcileTransaction.js","./getReactRootElementInContainer":"/Users/llun/Documents/slowfast/node_modules/react/lib/getReactRootElementInContainer.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./setInnerHTML":"/Users/llun/Documents/slowfast/node_modules/react/lib/setInnerHTML.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponentWithPureRenderMixin.js":[function(require,module,exports){
+},{"./ReactDOMIDOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMIDOperations.js","./ReactMarkupChecksum":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMarkupChecksum.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./ReactReconcileTransaction":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactReconcileTransaction.js","./getReactRootElementInContainer":"/Users/llun/Documents/slowfast/node_modules/react/lib/getReactRootElementInContainer.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./setInnerHTML":"/Users/llun/Documents/slowfast/node_modules/react/lib/setInnerHTML.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponentWithPureRenderMixin.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -16863,7 +16702,7 @@ var ReactCompositeComponent = {
 module.exports = ReactCompositeComponent;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./ReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponent.js","./ReactContext":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactContext.js","./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactElementValidator":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElementValidator.js","./ReactEmptyComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactEmptyComponent.js","./ReactErrorUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactErrorUtils.js","./ReactLegacyElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLegacyElement.js","./ReactOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactOwner.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./ReactPropTransferer":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTransferer.js","./ReactPropTypeLocationNames":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypeLocationNames.js","./ReactPropTypeLocations":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypeLocations.js","./ReactUpdates":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactUpdates.js","./instantiateReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/instantiateReactComponent.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./keyMirror":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyMirror.js","./keyOf":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyOf.js","./mapObject":"/Users/llun/Documents/slowfast/node_modules/react/lib/mapObject.js","./monitorCodeUse":"/Users/llun/Documents/slowfast/node_modules/react/lib/monitorCodeUse.js","./shouldUpdateReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/shouldUpdateReactComponent.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactContext.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./ReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponent.js","./ReactContext":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactContext.js","./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactElementValidator":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElementValidator.js","./ReactEmptyComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactEmptyComponent.js","./ReactErrorUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactErrorUtils.js","./ReactLegacyElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLegacyElement.js","./ReactOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactOwner.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./ReactPropTransferer":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTransferer.js","./ReactPropTypeLocationNames":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypeLocationNames.js","./ReactPropTypeLocations":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypeLocations.js","./ReactUpdates":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactUpdates.js","./instantiateReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/instantiateReactComponent.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./keyMirror":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyMirror.js","./keyOf":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyOf.js","./mapObject":"/Users/llun/Documents/slowfast/node_modules/react/lib/mapObject.js","./monitorCodeUse":"/Users/llun/Documents/slowfast/node_modules/react/lib/monitorCodeUse.js","./shouldUpdateReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/shouldUpdateReactComponent.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactContext.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -17142,7 +16981,7 @@ var ReactDOM = mapObject({
 module.exports = ReactDOM;
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactElementValidator":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElementValidator.js","./ReactLegacyElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLegacyElement.js","./mapObject":"/Users/llun/Documents/slowfast/node_modules/react/lib/mapObject.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMButton.js":[function(require,module,exports){
+},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactElementValidator":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElementValidator.js","./ReactLegacyElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLegacyElement.js","./mapObject":"/Users/llun/Documents/slowfast/node_modules/react/lib/mapObject.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMButton.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -17694,7 +17533,7 @@ assign(
 module.exports = ReactDOMComponent;
 
 }).call(this,require('_process'))
-},{"./CSSPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/CSSPropertyOperations.js","./DOMProperty":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMProperty.js","./DOMPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMPropertyOperations.js","./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactBrowserEventEmitter":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponent.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./ReactMultiChild":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMultiChild.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./escapeTextForBrowser":"/Users/llun/Documents/slowfast/node_modules/react/lib/escapeTextForBrowser.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./isEventSupported":"/Users/llun/Documents/slowfast/node_modules/react/lib/isEventSupported.js","./keyOf":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyOf.js","./monitorCodeUse":"/Users/llun/Documents/slowfast/node_modules/react/lib/monitorCodeUse.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMForm.js":[function(require,module,exports){
+},{"./CSSPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/CSSPropertyOperations.js","./DOMProperty":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMProperty.js","./DOMPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMPropertyOperations.js","./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactBrowserEventEmitter":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponent.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./ReactMultiChild":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMultiChild.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./escapeTextForBrowser":"/Users/llun/Documents/slowfast/node_modules/react/lib/escapeTextForBrowser.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./isEventSupported":"/Users/llun/Documents/slowfast/node_modules/react/lib/isEventSupported.js","./keyOf":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyOf.js","./monitorCodeUse":"/Users/llun/Documents/slowfast/node_modules/react/lib/monitorCodeUse.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMForm.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -17930,7 +17769,7 @@ var ReactDOMIDOperations = {
 module.exports = ReactDOMIDOperations;
 
 }).call(this,require('_process'))
-},{"./CSSPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/CSSPropertyOperations.js","./DOMChildrenOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMChildrenOperations.js","./DOMPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMPropertyOperations.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./setInnerHTML":"/Users/llun/Documents/slowfast/node_modules/react/lib/setInnerHTML.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMImg.js":[function(require,module,exports){
+},{"./CSSPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/CSSPropertyOperations.js","./DOMChildrenOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMChildrenOperations.js","./DOMPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMPropertyOperations.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./setInnerHTML":"/Users/llun/Documents/slowfast/node_modules/react/lib/setInnerHTML.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMImg.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -18156,7 +17995,7 @@ var ReactDOMInput = ReactCompositeComponent.createClass({
 module.exports = ReactDOMInput;
 
 }).call(this,require('_process'))
-},{"./AutoFocusMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/AutoFocusMixin.js","./DOMPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMPropertyOperations.js","./LinkedValueUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/LinkedValueUtils.js","./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./ReactUpdates":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactUpdates.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMOption.js":[function(require,module,exports){
+},{"./AutoFocusMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/AutoFocusMixin.js","./DOMPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMPropertyOperations.js","./LinkedValueUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/LinkedValueUtils.js","./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./ReactUpdates":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactUpdates.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMOption.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -18209,7 +18048,7 @@ var ReactDOMOption = ReactCompositeComponent.createClass({
 module.exports = ReactDOMOption;
 
 }).call(this,require('_process'))
-},{"./ReactBrowserComponentMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMSelect.js":[function(require,module,exports){
+},{"./ReactBrowserComponentMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMSelect.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -18743,7 +18582,7 @@ var ReactDOMTextarea = ReactCompositeComponent.createClass({
 module.exports = ReactDOMTextarea;
 
 }).call(this,require('_process'))
-},{"./AutoFocusMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/AutoFocusMixin.js","./DOMPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMPropertyOperations.js","./LinkedValueUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/LinkedValueUtils.js","./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactUpdates":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactUpdates.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDefaultBatchingStrategy.js":[function(require,module,exports){
+},{"./AutoFocusMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/AutoFocusMixin.js","./DOMPropertyOperations":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMPropertyOperations.js","./LinkedValueUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/LinkedValueUtils.js","./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactUpdates":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactUpdates.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDefaultBatchingStrategy.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -18945,7 +18784,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'))
-},{"./BeforeInputEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/BeforeInputEventPlugin.js","./ChangeEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ChangeEventPlugin.js","./ClientReactRootIndex":"/Users/llun/Documents/slowfast/node_modules/react/lib/ClientReactRootIndex.js","./CompositionEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/CompositionEventPlugin.js","./DefaultEventPluginOrder":"/Users/llun/Documents/slowfast/node_modules/react/lib/DefaultEventPluginOrder.js","./EnterLeaveEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/EnterLeaveEventPlugin.js","./ExecutionEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js","./HTMLDOMPropertyConfig":"/Users/llun/Documents/slowfast/node_modules/react/lib/HTMLDOMPropertyConfig.js","./MobileSafariClickEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/MobileSafariClickEventPlugin.js","./ReactBrowserComponentMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactComponentBrowserEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponentBrowserEnvironment.js","./ReactDOMButton":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMButton.js","./ReactDOMComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMComponent.js","./ReactDOMForm":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMForm.js","./ReactDOMImg":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMImg.js","./ReactDOMInput":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMInput.js","./ReactDOMOption":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMOption.js","./ReactDOMSelect":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMSelect.js","./ReactDOMTextarea":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMTextarea.js","./ReactDefaultBatchingStrategy":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDefaultBatchingStrategy.js","./ReactDefaultPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDefaultPerf.js","./ReactEventListener":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactEventListener.js","./ReactInjection":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactInjection.js","./ReactInstanceHandles":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactInstanceHandles.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./SVGDOMPropertyConfig":"/Users/llun/Documents/slowfast/node_modules/react/lib/SVGDOMPropertyConfig.js","./SelectEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/SelectEventPlugin.js","./ServerReactRootIndex":"/Users/llun/Documents/slowfast/node_modules/react/lib/ServerReactRootIndex.js","./SimpleEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/SimpleEventPlugin.js","./createFullPageComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/createFullPageComponent.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDefaultPerf.js":[function(require,module,exports){
+},{"./BeforeInputEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/BeforeInputEventPlugin.js","./ChangeEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ChangeEventPlugin.js","./ClientReactRootIndex":"/Users/llun/Documents/slowfast/node_modules/react/lib/ClientReactRootIndex.js","./CompositionEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/CompositionEventPlugin.js","./DefaultEventPluginOrder":"/Users/llun/Documents/slowfast/node_modules/react/lib/DefaultEventPluginOrder.js","./EnterLeaveEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/EnterLeaveEventPlugin.js","./ExecutionEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js","./HTMLDOMPropertyConfig":"/Users/llun/Documents/slowfast/node_modules/react/lib/HTMLDOMPropertyConfig.js","./MobileSafariClickEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/MobileSafariClickEventPlugin.js","./ReactBrowserComponentMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactComponentBrowserEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponentBrowserEnvironment.js","./ReactDOMButton":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMButton.js","./ReactDOMComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMComponent.js","./ReactDOMForm":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMForm.js","./ReactDOMImg":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMImg.js","./ReactDOMInput":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMInput.js","./ReactDOMOption":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMOption.js","./ReactDOMSelect":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMSelect.js","./ReactDOMTextarea":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDOMTextarea.js","./ReactDefaultBatchingStrategy":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDefaultBatchingStrategy.js","./ReactDefaultPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDefaultPerf.js","./ReactEventListener":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactEventListener.js","./ReactInjection":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactInjection.js","./ReactInstanceHandles":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactInstanceHandles.js","./ReactMount":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMount.js","./SVGDOMPropertyConfig":"/Users/llun/Documents/slowfast/node_modules/react/lib/SVGDOMPropertyConfig.js","./SelectEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/SelectEventPlugin.js","./ServerReactRootIndex":"/Users/llun/Documents/slowfast/node_modules/react/lib/ServerReactRootIndex.js","./SimpleEventPlugin":"/Users/llun/Documents/slowfast/node_modules/react/lib/SimpleEventPlugin.js","./createFullPageComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/createFullPageComponent.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDefaultPerf.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -19657,7 +19496,7 @@ ReactElement.isValidElement = function(object) {
 module.exports = ReactElement;
 
 }).call(this,require('_process'))
-},{"./ReactContext":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactContext.js","./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElementValidator.js":[function(require,module,exports){
+},{"./ReactContext":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactContext.js","./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElementValidator.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -19939,7 +19778,7 @@ var ReactElementValidator = {
 module.exports = ReactElementValidator;
 
 }).call(this,require('_process'))
-},{"./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactPropTypeLocations":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypeLocations.js","./monitorCodeUse":"/Users/llun/Documents/slowfast/node_modules/react/lib/monitorCodeUse.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactEmptyComponent.js":[function(require,module,exports){
+},{"./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactPropTypeLocations":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypeLocations.js","./monitorCodeUse":"/Users/llun/Documents/slowfast/node_modules/react/lib/monitorCodeUse.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactEmptyComponent.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -20016,7 +19855,7 @@ var ReactEmptyComponent = {
 module.exports = ReactEmptyComponent;
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactErrorUtils.js":[function(require,module,exports){
+},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactErrorUtils.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20793,7 +20632,7 @@ var ReactInstanceHandles = {
 module.exports = ReactInstanceHandles;
 
 }).call(this,require('_process'))
-},{"./ReactRootIndex":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactRootIndex.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLegacyElement.js":[function(require,module,exports){
+},{"./ReactRootIndex":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactRootIndex.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLegacyElement.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -21040,7 +20879,7 @@ ReactLegacyElementFactory._isLegacyCallWarningEnabled = true;
 module.exports = ReactLegacyElementFactory;
 
 }).call(this,require('_process'))
-},{"./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./monitorCodeUse":"/Users/llun/Documents/slowfast/node_modules/react/lib/monitorCodeUse.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLink.js":[function(require,module,exports){
+},{"./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./monitorCodeUse":"/Users/llun/Documents/slowfast/node_modules/react/lib/monitorCodeUse.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLink.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21859,7 +21698,7 @@ ReactMount.renderComponent = deprecated(
 module.exports = ReactMount;
 
 }).call(this,require('_process'))
-},{"./DOMProperty":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMProperty.js","./ReactBrowserEventEmitter":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactInstanceHandles":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactInstanceHandles.js","./ReactLegacyElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLegacyElement.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./containsNode":"/Users/llun/Documents/slowfast/node_modules/react/lib/containsNode.js","./deprecated":"/Users/llun/Documents/slowfast/node_modules/react/lib/deprecated.js","./getReactRootElementInContainer":"/Users/llun/Documents/slowfast/node_modules/react/lib/getReactRootElementInContainer.js","./instantiateReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/instantiateReactComponent.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./shouldUpdateReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/shouldUpdateReactComponent.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMultiChild.js":[function(require,module,exports){
+},{"./DOMProperty":"/Users/llun/Documents/slowfast/node_modules/react/lib/DOMProperty.js","./ReactBrowserEventEmitter":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactInstanceHandles":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactInstanceHandles.js","./ReactLegacyElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLegacyElement.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./containsNode":"/Users/llun/Documents/slowfast/node_modules/react/lib/containsNode.js","./deprecated":"/Users/llun/Documents/slowfast/node_modules/react/lib/deprecated.js","./getReactRootElementInContainer":"/Users/llun/Documents/slowfast/node_modules/react/lib/getReactRootElementInContainer.js","./instantiateReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/instantiateReactComponent.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./shouldUpdateReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/shouldUpdateReactComponent.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMultiChild.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -22393,7 +22232,7 @@ var ReactNativeComponent = {
 module.exports = ReactNativeComponent;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactOwner.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactOwner.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -22549,7 +22388,7 @@ var ReactOwner = {
 module.exports = ReactOwner;
 
 }).call(this,require('_process'))
-},{"./emptyObject":"/Users/llun/Documents/slowfast/node_modules/react/lib/emptyObject.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js":[function(require,module,exports){
+},{"./emptyObject":"/Users/llun/Documents/slowfast/node_modules/react/lib/emptyObject.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -22633,7 +22472,7 @@ function _noMeasure(objName, fnName, func) {
 module.exports = ReactPerf;
 
 }).call(this,require('_process'))
-},{"_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTransferer.js":[function(require,module,exports){
+},{"_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTransferer.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -22800,7 +22639,7 @@ var ReactPropTransferer = {
 module.exports = ReactPropTransferer;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./emptyFunction":"/Users/llun/Documents/slowfast/node_modules/react/lib/emptyFunction.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./joinClasses":"/Users/llun/Documents/slowfast/node_modules/react/lib/joinClasses.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypeLocationNames.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./emptyFunction":"/Users/llun/Documents/slowfast/node_modules/react/lib/emptyFunction.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./joinClasses":"/Users/llun/Documents/slowfast/node_modules/react/lib/joinClasses.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypeLocationNames.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -22828,7 +22667,7 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = ReactPropTypeLocationNames;
 
 }).call(this,require('_process'))
-},{"_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypeLocations.js":[function(require,module,exports){
+},{"_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTypeLocations.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -23549,7 +23388,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactInstanceHandles":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactInstanceHandles.js","./ReactMarkupChecksum":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMarkupChecksum.js","./ReactServerRenderingTransaction":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactServerRenderingTransaction.js","./instantiateReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/instantiateReactComponent.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactServerRenderingTransaction.js":[function(require,module,exports){
+},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactInstanceHandles":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactInstanceHandles.js","./ReactMarkupChecksum":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactMarkupChecksum.js","./ReactServerRenderingTransaction":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactServerRenderingTransaction.js","./instantiateReactComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/instantiateReactComponent.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactServerRenderingTransaction.js":[function(require,module,exports){
 /**
  * Copyright 2014, Facebook, Inc.
  * All rights reserved.
@@ -24977,7 +24816,7 @@ var ReactUpdates = {
 module.exports = ReactUpdates;
 
 }).call(this,require('_process'))
-},{"./CallbackQueue":"/Users/llun/Documents/slowfast/node_modules/react/lib/CallbackQueue.js","./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/llun/Documents/slowfast/node_modules/react/lib/PooledClass.js","./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./Transaction":"/Users/llun/Documents/slowfast/node_modules/react/lib/Transaction.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactWithAddons.js":[function(require,module,exports){
+},{"./CallbackQueue":"/Users/llun/Documents/slowfast/node_modules/react/lib/CallbackQueue.js","./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/llun/Documents/slowfast/node_modules/react/lib/PooledClass.js","./ReactCurrentOwner":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCurrentOwner.js","./ReactPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPerf.js","./Transaction":"/Users/llun/Documents/slowfast/node_modules/react/lib/Transaction.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactWithAddons.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -25031,7 +24870,7 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = React;
 
 }).call(this,require('_process'))
-},{"./LinkedStateMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/LinkedStateMixin.js","./React":"/Users/llun/Documents/slowfast/node_modules/react/lib/React.js","./ReactCSSTransitionGroup":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCSSTransitionGroup.js","./ReactComponentWithPureRenderMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponentWithPureRenderMixin.js","./ReactDefaultPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDefaultPerf.js","./ReactTestUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactTestUtils.js","./ReactTransitionGroup":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactTransitionGroup.js","./ReactUpdates":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactUpdates.js","./cloneWithProps":"/Users/llun/Documents/slowfast/node_modules/react/lib/cloneWithProps.js","./cx":"/Users/llun/Documents/slowfast/node_modules/react/lib/cx.js","./update":"/Users/llun/Documents/slowfast/node_modules/react/lib/update.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/SVGDOMPropertyConfig.js":[function(require,module,exports){
+},{"./LinkedStateMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/LinkedStateMixin.js","./React":"/Users/llun/Documents/slowfast/node_modules/react/lib/React.js","./ReactCSSTransitionGroup":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCSSTransitionGroup.js","./ReactComponentWithPureRenderMixin":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactComponentWithPureRenderMixin.js","./ReactDefaultPerf":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactDefaultPerf.js","./ReactTestUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactTestUtils.js","./ReactTransitionGroup":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactTransitionGroup.js","./ReactUpdates":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactUpdates.js","./cloneWithProps":"/Users/llun/Documents/slowfast/node_modules/react/lib/cloneWithProps.js","./cx":"/Users/llun/Documents/slowfast/node_modules/react/lib/cx.js","./update":"/Users/llun/Documents/slowfast/node_modules/react/lib/update.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/SVGDOMPropertyConfig.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -25777,7 +25616,7 @@ var SimpleEventPlugin = {
 module.exports = SimpleEventPlugin;
 
 }).call(this,require('_process'))
-},{"./EventConstants":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventConstants.js","./EventPluginUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginUtils.js","./EventPropagators":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPropagators.js","./SyntheticClipboardEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticClipboardEvent.js","./SyntheticDragEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticDragEvent.js","./SyntheticEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticEvent.js","./SyntheticFocusEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticFocusEvent.js","./SyntheticKeyboardEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticKeyboardEvent.js","./SyntheticMouseEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticMouseEvent.js","./SyntheticTouchEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticTouchEvent.js","./SyntheticUIEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticUIEvent.js","./SyntheticWheelEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticWheelEvent.js","./getEventCharCode":"/Users/llun/Documents/slowfast/node_modules/react/lib/getEventCharCode.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./keyOf":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyOf.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticClipboardEvent.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventConstants.js","./EventPluginUtils":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPluginUtils.js","./EventPropagators":"/Users/llun/Documents/slowfast/node_modules/react/lib/EventPropagators.js","./SyntheticClipboardEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticClipboardEvent.js","./SyntheticDragEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticDragEvent.js","./SyntheticEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticEvent.js","./SyntheticFocusEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticFocusEvent.js","./SyntheticKeyboardEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticKeyboardEvent.js","./SyntheticMouseEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticMouseEvent.js","./SyntheticTouchEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticTouchEvent.js","./SyntheticUIEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticUIEvent.js","./SyntheticWheelEvent":"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticWheelEvent.js","./getEventCharCode":"/Users/llun/Documents/slowfast/node_modules/react/lib/getEventCharCode.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./keyOf":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyOf.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/SyntheticClipboardEvent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -26734,7 +26573,7 @@ var Transaction = {
 module.exports = Transaction;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ViewportMetrics.js":[function(require,module,exports){
+},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/ViewportMetrics.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -26832,7 +26671,7 @@ function accumulateInto(current, next) {
 module.exports = accumulateInto;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/adler32.js":[function(require,module,exports){
+},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/adler32.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -26999,7 +26838,7 @@ function cloneWithProps(child, props) {
 module.exports = cloneWithProps;
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactPropTransferer":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTransferer.js","./keyOf":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyOf.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/containsNode.js":[function(require,module,exports){
+},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactPropTransferer":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactPropTransferer.js","./keyOf":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyOf.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/containsNode.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -27190,7 +27029,7 @@ function createFullPageComponent(tag) {
 module.exports = createFullPageComponent;
 
 }).call(this,require('_process'))
-},{"./ReactCompositeComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCompositeComponent.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/createNodesFromMarkup.js":[function(require,module,exports){
+},{"./ReactCompositeComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactCompositeComponent.js","./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/createNodesFromMarkup.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -27280,7 +27119,7 @@ function createNodesFromMarkup(markup, handleScript) {
 module.exports = createNodesFromMarkup;
 
 }).call(this,require('_process'))
-},{"./ExecutionEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js","./createArrayFrom":"/Users/llun/Documents/slowfast/node_modules/react/lib/createArrayFrom.js","./getMarkupWrap":"/Users/llun/Documents/slowfast/node_modules/react/lib/getMarkupWrap.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/cx.js":[function(require,module,exports){
+},{"./ExecutionEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js","./createArrayFrom":"/Users/llun/Documents/slowfast/node_modules/react/lib/createArrayFrom.js","./getMarkupWrap":"/Users/llun/Documents/slowfast/node_modules/react/lib/getMarkupWrap.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/cx.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -27428,7 +27267,7 @@ function deprecated(namespace, oldName, newName, ctx, fn) {
 module.exports = deprecated;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/emptyFunction.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/emptyFunction.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -27486,7 +27325,7 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = emptyObject;
 
 }).call(this,require('_process'))
-},{"_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/escapeTextForBrowser.js":[function(require,module,exports){
+},{"_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/escapeTextForBrowser.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -27596,7 +27435,7 @@ function flattenChildren(children) {
 module.exports = flattenChildren;
 
 }).call(this,require('_process'))
-},{"./ReactTextComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactTextComponent.js","./traverseAllChildren":"/Users/llun/Documents/slowfast/node_modules/react/lib/traverseAllChildren.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/focusNode.js":[function(require,module,exports){
+},{"./ReactTextComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactTextComponent.js","./traverseAllChildren":"/Users/llun/Documents/slowfast/node_modules/react/lib/traverseAllChildren.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/focusNode.js":[function(require,module,exports){
 /**
  * Copyright 2014, Facebook, Inc.
  * All rights reserved.
@@ -28037,7 +27876,7 @@ function getMarkupWrap(nodeName) {
 module.exports = getMarkupWrap;
 
 }).call(this,require('_process'))
-},{"./ExecutionEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/getNodeForCharacterOffset.js":[function(require,module,exports){
+},{"./ExecutionEnvironment":"/Users/llun/Documents/slowfast/node_modules/react/lib/ExecutionEnvironment.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/getNodeForCharacterOffset.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -28412,7 +28251,7 @@ function instantiateReactComponent(element, parentCompositeType) {
 module.exports = instantiateReactComponent;
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactEmptyComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactEmptyComponent.js","./ReactLegacyElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLegacyElement.js","./ReactNativeComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactNativeComponent.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js":[function(require,module,exports){
+},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactEmptyComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactEmptyComponent.js","./ReactLegacyElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactLegacyElement.js","./ReactNativeComponent":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactNativeComponent.js","./warning":"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -28469,7 +28308,7 @@ var invariant = function(condition, format, a, b, c, d, e, f) {
 module.exports = invariant;
 
 }).call(this,require('_process'))
-},{"_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/isEventSupported.js":[function(require,module,exports){
+},{"_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/isEventSupported.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -28727,7 +28566,7 @@ var keyMirror = function(obj) {
 module.exports = keyMirror;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/keyOf.js":[function(require,module,exports){
+},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/keyOf.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -28884,7 +28723,7 @@ function monitorCodeUse(eventName, data) {
 module.exports = monitorCodeUse;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/onlyChild.js":[function(require,module,exports){
+},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/onlyChild.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -28924,7 +28763,7 @@ function onlyChild(children) {
 module.exports = onlyChild;
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/performance.js":[function(require,module,exports){
+},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/performance.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -29212,7 +29051,7 @@ function toArray(obj) {
 module.exports = toArray;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/traverseAllChildren.js":[function(require,module,exports){
+},{"./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/traverseAllChildren.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -29395,7 +29234,7 @@ function traverseAllChildren(children, callback, traverseContext) {
 module.exports = traverseAllChildren;
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactInstanceHandles":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactInstanceHandles.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/update.js":[function(require,module,exports){
+},{"./ReactElement":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactElement.js","./ReactInstanceHandles":"/Users/llun/Documents/slowfast/node_modules/react/lib/ReactInstanceHandles.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/update.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -29563,7 +29402,7 @@ function update(value, spec) {
 module.exports = update;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./keyOf":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyOf.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/llun/Documents/slowfast/node_modules/react/lib/Object.assign.js","./invariant":"/Users/llun/Documents/slowfast/node_modules/react/lib/invariant.js","./keyOf":"/Users/llun/Documents/slowfast/node_modules/react/lib/keyOf.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/react/lib/warning.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -29608,7 +29447,168 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = warning;
 
 }).call(this,require('_process'))
-},{"./emptyFunction":"/Users/llun/Documents/slowfast/node_modules/react/lib/emptyFunction.js","_process":"/Users/llun/Documents/slowfast/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/whatwg-fetch/fetch.js":[function(require,module,exports){
+},{"./emptyFunction":"/Users/llun/Documents/slowfast/node_modules/react/lib/emptyFunction.js","_process":"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/llun/Documents/slowfast/node_modules/slowfast/lib/slowfast.js":[function(require,module,exports){
+"use strict";
+
+var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+var transitions = _interopRequire(require("./transitions"));
+
+var SlowFast = (function () {
+  function SlowFast(video, rates, transition) {
+    _classCallCheck(this, SlowFast);
+
+    this.rates = rates || [];
+    this.transition = transition || transitions.linear;
+
+    this.blocks = rates.map(function (rate, index) {
+      return { start: rate, end: rates[index + 1] };
+    });
+    this.currentBlock = 0;
+
+    if (video) {
+      this.video = video;
+      video.addEventListener("timeupdate", this.handleTimeUpdate.bind(this));
+    }
+  }
+
+  _createClass(SlowFast, {
+    play: {
+      value: function play() {
+        if (this.video) this.video.play();
+      }
+    },
+    pause: {
+      value: function pause() {
+        if (this.video) this.video.pause();
+      }
+    },
+    reset: {
+      value: function reset() {
+        if (this.video) {
+          this.video.currentTime = 0;
+          this.video.pause();
+        }
+      }
+    },
+    updateRates: {
+      value: function updateRates(rates) {
+        this.pause();
+
+        this.rates = rates;
+        this.blocks = rates.map(function (rate, index) {
+          return { start: rate, end: rates[index + 1] };
+        });
+
+        this.handleTimeUpdate();
+      }
+    },
+    handleTimeUpdate: {
+      value: function handleTimeUpdate() {
+        var video = this.video,
+            transition = this.transition,
+            blocks = this.blocks,
+            currentTime = video.currentTime;
+
+        var block = blocks[this.currentBlock];
+        if (block.end && currentTime >= block.end.time) {
+          this.currentBlock++;
+        }
+
+        video.playbackRate = transition(block.start, block.end, currentTime);
+      }
+    }
+  });
+
+  return SlowFast;
+})();
+
+module.exports = SlowFast;
+
+},{"./transitions":"/Users/llun/Documents/slowfast/node_modules/slowfast/lib/transitions.js"}],"/Users/llun/Documents/slowfast/node_modules/slowfast/lib/transitions.js":[function(require,module,exports){
+"use strict";
+
+module.exports = {
+  linear: function linear(start, end, time) {
+    if (!start) {
+      return null;
+    }if (!end || !time) {
+      return start.rate;
+    }var totalTimeInBlock = end.time - start.time,
+        timeInBlock = time - start.time;
+    if (start.rate < end.rate) {
+      return Math.tan(Math.atan((end.rate - start.rate) / totalTimeInBlock)) * timeInBlock + start.rate;
+    }
+
+    return Math.tan(Math.atan((start.rate - end.rate) / totalTimeInBlock)) * (totalTimeInBlock - timeInBlock) + end.rate;
+  }
+};
+
+},{}],"/Users/llun/Documents/slowfast/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+var queue = [];
+var draining = false;
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    draining = true;
+    var currentQueue;
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        var i = -1;
+        while (++i < len) {
+            currentQueue[i]();
+        }
+        len = queue.length;
+    }
+    draining = false;
+}
+process.nextTick = function (fun) {
+    queue.push(fun);
+    if (!draining) {
+        setTimeout(drainQueue, 0);
+    }
+};
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],"/Users/llun/Documents/slowfast/node_modules/whatwg-fetch/fetch.js":[function(require,module,exports){
 (function() {
   'use strict';
 
@@ -29945,7 +29945,7 @@ var d3 = _interopRequire(require("d3"));
 
 var wg_fetch = _interopRequire(require("whatwg-fetch"));
 
-var SlowFast = _interopRequire(require("../lib/slowfast"));
+var SlowFast = _interopRequire(require("slowfast"));
 
 var ADDING_POINT = "adding",
     REMOVING_POINT = "removing";
@@ -30299,4 +30299,4 @@ var App = React.createClass({
 
 React.render(React.createElement(App, null), document.querySelector("body"));
 
-},{"../lib/slowfast":"/Users/llun/Documents/slowfast/lib/slowfast.js","d3":"/Users/llun/Documents/slowfast/node_modules/d3/d3.js","react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js","whatwg-fetch":"/Users/llun/Documents/slowfast/node_modules/whatwg-fetch/fetch.js"}]},{},["/Users/llun/Documents/slowfast"]);
+},{"d3":"/Users/llun/Documents/slowfast/node_modules/d3/d3.js","react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js","slowfast":"/Users/llun/Documents/slowfast/node_modules/slowfast/lib/slowfast.js","whatwg-fetch":"/Users/llun/Documents/slowfast/node_modules/whatwg-fetch/fetch.js"}]},{},["/Users/llun/Documents/slowfast"]);

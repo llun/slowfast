@@ -1,1 +1,1 @@
-# Slow Fast with JS Experimental
+# SlowFast Demo App
