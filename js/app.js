@@ -5,7 +5,7 @@ import Panel from './panel'
 
 let App = React.createClass({
   getInitialState() {
-    return { loading: true, playing: false, rates: [] }
+    return { loading: true, playing: false, videoID: '', rates: [] }
   },
 
   video() {
@@ -37,6 +37,8 @@ let App = React.createClass({
     if (idPattern) {
       id = idPattern[2]
     }
+
+    this.setState({ videoID: id })
     
     fetch(`http://vimeo-config.herokuapp.com/${id}.json`)
       .then(response => { return response.json() })
@@ -99,7 +101,7 @@ let App = React.createClass({
           </div>
         </div>
 
-        <Panel video={this.state.video} initialRates={this.state.rates} />
+        <Panel video={this.state.video} initialRates={this.state.rates} videoID={this.state.videoID} />
       </div>
       )
   }

@@ -2,7 +2,10 @@ import React from 'react/addons'
 import d3 from 'd3'
 import SlowFast from 'slowfast'
 
-let bisectRate = d3.bisector(datum => { return datum.time }).right
+const ADDING_POINT = 'adding', REMOVING_POINT = 'removing'
+
+let rates = []
+  , bisectRate = d3.bisector(datum => { return datum.time }).right
   , bisectPath = d3.bisector(datum => { return datum.x }).right
   , focusPoint = null
   , playingPath = []
@@ -15,26 +18,33 @@ let bisectRate = d3.bisector(datum => { return datum.time }).right
 
 let Panel = React.createClass({
   getInitialState() {
-    return { rates: this.props.initialRates }
+    return { adjustPoints: false }
   },
 
-  componentDidUpdate() {
+  componentDidMount() {
     this.drawPanel()
     window.addEventListener('resize', event => {
       this.drawPanel()
     })
   },
 
+  componentDidUpdate() {
+    this.drawPanel()
+  },
+
   drawPanel() {
-    if (this.state.rates.length == 0) return
+    if (this.props.initialRates.length == 0) {
+      return
+    }
 
     let video = this.props.video
       , width = this.refs.panel.getDOMNode().clientWidth
       , x = d3.scale.linear().domain([0, video.duration]).range([0, width])
       , y = d3.scale.linear().domain([0.5, 4]).range([height, 0])
       , line = d3.svg.line().interpolate('monotone').x(rate => { return x(rate.time) }).y(rate => { return y(rate.rate) })
-      , rates = this.state.rates
       , self = this
+
+    rates = this.props.initialRates
 
     let panel = d3.select(this.refs.panel.getDOMNode())
     panel.selectAll("*").remove()
@@ -47,6 +57,16 @@ let Panel = React.createClass({
       , ratesGroup = panel.append('g')
       , marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].rate)).attr('r', markerPointSize).attr('fill', 'black').attr('display', 'none')
 
+    slowfast = new SlowFast(video, rates, (start, end, time) => {
+      if (!end) { return start.rate }
+
+      let index = bisectPath(playingPath, x(time), 1)
+        , point = playingPath[index]
+
+      if (!point) { return start.rate }
+      playingPoint.attr('cx', point.x).attr('cy', point.y)
+      return y.invert(point.y)
+    })
     this.redrawRates(ratesGroup, path, x, y, line, playingPoint)
     this.playingPoint = playingPoint
 
@@ -112,18 +132,7 @@ let Panel = React.createClass({
       })
       .on('mouseup', () => {
         focusPoint = null
-      })
-
-    slowfast = new SlowFast(video, rates, (start, end, time) => {
-      if (!end) { return start.rate }
-
-      let index = bisectPath(playingPath, x(time), 1)
-        , point = playingPath[index]
-
-      if (!point) { return start.rate }
-      this.playingPoint.attr('cx', point.x).attr('cy', point.y)
-      return y.invert(point.y)
-    })
+      })    
   },
 
   addPoint() {
@@ -174,7 +183,6 @@ let Panel = React.createClass({
   },
 
   updatePath(path, x, y, line, playingPoint) {
-    let video = this.video()
     playingPath = []
 
     path.attr('d', line(rates))
@@ -195,7 +203,7 @@ let Panel = React.createClass({
     }).join(',')
 
     if (window.history) {
-      history.pushState(null, null, `${location}?video=${this.state.video}&rates=${encodedRates}`);
+      history.pushState(null, null, `${location}?video=${this.props.videoID}&rates=${encodedRates}`);
     }
   },
 
