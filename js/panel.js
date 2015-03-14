@@ -18,9 +18,7 @@ let Panel = React.createClass({
     return { rates: this.props.initialRates }
   },
 
-  componentDidMount() {
-    if (this.state.rates.length == 0) return
-
+  componentDidUpdate() {
     this.drawPanel()
     window.addEventListener('resize', event => {
       this.drawPanel()
@@ -28,6 +26,8 @@ let Panel = React.createClass({
   },
 
   drawPanel() {
+    if (this.state.rates.length == 0) return
+
     let video = this.props.video
       , width = this.refs.panel.getDOMNode().clientWidth
       , x = d3.scale.linear().domain([0, video.duration]).range([0, width])

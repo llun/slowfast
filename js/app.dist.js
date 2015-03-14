@@ -31,12 +31,10 @@ var Panel = React.createClass({
     return { rates: this.props.initialRates };
   },
 
-  componentDidMount: function componentDidMount() {
+  componentDidUpdate: function componentDidUpdate() {
     var _this = this;
 
-    if (this.state.rates.length == 0) {
-      return;
-    }this.drawPanel();
+    this.drawPanel();
     window.addEventListener("resize", function (event) {
       _this.drawPanel();
     });
@@ -45,7 +43,9 @@ var Panel = React.createClass({
   drawPanel: function drawPanel() {
     var _this = this;
 
-    var video = this.props.video,
+    if (this.state.rates.length == 0) {
+      return;
+    }var video = this.props.video,
         width = this.refs.panel.getDOMNode().clientWidth,
         x = d3.scale.linear().domain([0, video.duration]).range([0, width]),
         y = d3.scale.linear().domain([0.5, 4]).range([height, 0]),
