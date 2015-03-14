@@ -1,4 +1,231 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/Users/llun/Documents/slowfast/node_modules/d3/d3.js":[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/Users/llun/Documents/slowfast/js/panel.js":[function(require,module,exports){
+"use strict";
+
+var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+var React = _interopRequire(require("react/addons"));
+
+var d3 = _interopRequire(require("d3"));
+
+var SlowFast = _interopRequire(require("slowfast"));
+
+var bisectRate = d3.bisector(function (datum) {
+  return datum.time;
+}).right,
+    bisectPath = d3.bisector(function (datum) {
+  return datum.x;
+}).right,
+    focusPoint = null,
+    playingPath = [],
+    width = 800,
+    height = 200,
+    pointStrokeSize = 2,
+    playingPointSize = 10,
+    markerPointSize = 8,
+    slowfast = null;
+
+var Panel = React.createClass({
+  displayName: "Panel",
+
+  getInitialState: function getInitialState() {
+    return { rates: this.props.initialRates };
+  },
+
+  componentDidMount: function componentDidMount() {
+    var _this = this;
+
+    if (this.state.rates.length == 0) {
+      return;
+    }this.drawPanel();
+    window.addEventListener("resize", function (event) {
+      _this.drawPanel();
+    });
+  },
+
+  drawPanel: function drawPanel() {
+    var _this = this;
+
+    var video = this.props.video,
+        width = this.refs.panel.getDOMNode().clientWidth,
+        x = d3.scale.linear().domain([0, video.duration]).range([0, width]),
+        y = d3.scale.linear().domain([0.5, 4]).range([height, 0]),
+        line = d3.svg.line().interpolate("monotone").x(function (rate) {
+      return x(rate.time);
+    }).y(function (rate) {
+      return y(rate.rate);
+    }),
+        rates = this.state.rates,
+        self = this;
+
+    var panel = d3.select(this.refs.panel.getDOMNode());
+    panel.selectAll("*").remove();
+    panel.attr("preserveAspectRatio", "xMinYMin meet").attr("viewBox", "0 0 " + width + " " + height);
+
+    var path = panel.append("path").attr("stroke", "blue").attr("stroke-width", pointStrokeSize).attr("fill", "none"),
+        playingPoint = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].rate)).attr("r", playingPointSize).attr("fill", "white").attr("stroke", "red").attr("stroke-width", pointStrokeSize),
+        ratesGroup = panel.append("g"),
+        marker = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].rate)).attr("r", markerPointSize).attr("fill", "black").attr("display", "none");
+
+    this.redrawRates(ratesGroup, path, x, y, line, playingPoint);
+    this.playingPoint = playingPoint;
+
+    panel.on("click", function () {
+      if (self.state.adjustPoints == ADDING_POINT) {
+        var mouse = d3.mouse(this);
+
+        var time = x.invert(marker.attr("cx"));
+        var rate = y.invert(marker.attr("cy"));
+
+        var index = bisectRate(rates, time);
+        rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index));
+        self.redrawRates(ratesGroup, path, x, y, line, playingPoint);
+        self.setState({ adjustPoints: false });
+      }
+    }).on("mouseover", function () {
+      if (self.state.adjustPoints == ADDING_POINT) {
+        var mouse = d3.mouse(this);
+        marker.attr("display", "inherit");
+      }
+    }).on("mouseout", function () {
+      marker.attr("display", "none");
+    }).on("mousemove", function () {
+      var mouse = d3.mouse(this);
+
+      var newTime = x.invert(mouse[0]);
+      var newRate = y.invert(mouse[1]);
+
+      var index = bisectPath(playingPath, mouse[0], 1);
+
+      if (self.state.adjustPoints == ADDING_POINT) {
+        var point = playingPath[index];
+
+        if (point) {
+          marker.attr("cx", point.x).attr("cy", point.y);
+        }
+      }
+
+      if (!focusPoint) return;
+
+      var rate = focusPoint.datum();
+      var rateIndex = rates.indexOf(rate);
+
+      if (rateIndex > 0) {
+        var previousRate = rates[rateIndex - 1];
+        if (newTime <= previousRate.time) return;
+      }
+
+      if (rateIndex < rates.length - 1) {
+        var nextRate = rates[rateIndex + 1];
+        if (newTime >= nextRate.time) return;
+      }
+
+      rate.time = newTime;
+      rate.rate = newRate;
+
+      focusPoint.attr("cx", mouse[0]).attr("cy", mouse[1]);
+      self.updatePath(path, x, y, line, playingPoint);
+    }).on("mouseup", function () {
+      focusPoint = null;
+    });
+
+    slowfast = new SlowFast(video, rates, function (start, end, time) {
+      if (!end) {
+        return start.rate;
+      }
+
+      var index = bisectPath(playingPath, x(time), 1),
+          point = playingPath[index];
+
+      if (!point) {
+        return start.rate;
+      }
+      _this.playingPoint.attr("cx", point.x).attr("cy", point.y);
+      return y.invert(point.y);
+    });
+  },
+
+  addPoint: function addPoint() {
+    slowfast.pause();
+
+    if (this.state.adjustPoints == ADDING_POINT) {
+      return this.setState({ adjustPoints: false });
+    }
+    this.setState({ adjustPoints: ADDING_POINT });
+  },
+
+  removePoint: function removePoint() {
+    slowfast.pause();
+
+    if (this.state.adjustPoints == REMOVING_POINT) {
+      return this.setState({ adjustPoints: false });
+    }
+    this.setState({ adjustPoints: REMOVING_POINT });
+  },
+
+  redrawRates: function redrawRates(group, path, x, y, line, playingPoint) {
+    var self = this;
+    group.selectAll(".ratePoint").remove();
+    group.selectAll(".ratePoint").data(rates).enter().append("circle").attr("class", "ratePoint").attr("cx", function (rate) {
+      return x(rate.time);
+    }).attr("cy", function (rate) {
+      return y(rate.rate);
+    }).attr("r", markerPointSize).attr("fill", "black").attr("stroke", "black").attr("stroke-width", pointStrokeSize).on("mousedown", function () {
+      focusPoint = d3.select(this);
+    }).on("click", function () {
+      if (self.state.adjustPoints == REMOVING_POINT) {
+        var point = d3.select(this).datum();
+        var index = rates.indexOf(point);
+        if (index == 0 || index == rates.length - 1) return;
+
+        rates = rates.slice(0, index).concat(rates.slice(index + 1));
+        self.redrawRates(group, path, x, y, line, playingPoint);
+      }
+    });
+    this.updatePath(path, x, y, line, playingPoint);
+  },
+
+  updatePath: function updatePath(path, x, y, line, playingPoint) {
+    var video = this.video();
+    playingPath = [];
+
+    path.attr("d", line(rates));
+    var node = path.node();
+    for (var i = 0; i < node.getTotalLength(); i++) {
+      var point = node.getPointAtLength(i);
+      playingPath.push(point);
+    }
+    slowfast.updateRates(rates);
+
+    var location = window.location.toString();
+    if (location.indexOf("?") > 0) {
+      location = location.substring(0, location.indexOf("?"));
+    }
+
+    var encodedRates = rates.map(function (each) {
+      return "" + each.time.toFixed(2) + ":" + each.rate.toFixed(2);
+    }).join(",");
+
+    if (window.history) {
+      history.pushState(null, null, "" + location + "?video=" + this.state.video + "&rates=" + encodedRates);
+    }
+  },
+
+  render: function render() {
+    return React.createElement(
+      "div",
+      { className: "row slowfast-panel" },
+      React.createElement(
+        "div",
+        { className: "col-xs-12" },
+        React.createElement("svg", { className: "graph", ref: "panel" })
+      )
+    );
+  }
+});
+
+module.exports = Panel;
+
+},{"d3":"/Users/llun/Documents/slowfast/node_modules/d3/d3.js","react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js","slowfast":"/Users/llun/Documents/slowfast/node_modules/slowfast/lib/slowfast.js"}],"/Users/llun/Documents/slowfast/node_modules/d3/d3.js":[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.5"
@@ -29941,73 +30168,36 @@ var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["defau
 
 var React = _interopRequire(require("react/addons"));
 
-var d3 = _interopRequire(require("d3"));
-
 var wg_fetch = _interopRequire(require("whatwg-fetch"));
 
-var SlowFast = _interopRequire(require("slowfast"));
-
-var ADDING_POINT = "adding",
-    REMOVING_POINT = "removing";
-
-var rates = [],
-    bisectRate = d3.bisector(function (datum) {
-  return datum.time;
-}).right,
-    bisectPath = d3.bisector(function (datum) {
-  return datum.x;
-}).right,
-    focusPoint = null,
-    playingPath = [],
-    width = 800,
-    height = 200,
-    pointStrokeSize = 2,
-    playingPointSize = 10,
-    markerPointSize = 8,
-    slowfast = null;
+var Panel = _interopRequire(require("./panel"));
 
 var App = React.createClass({
   displayName: "App",
 
   getInitialState: function getInitialState() {
-    return { loading: true, adjustPoints: false, url: "", video: "", playing: false };
+    return { loading: true, playing: false, rates: [] };
   },
 
   video: function video() {
     return this.refs.video.getDOMNode();
   },
+
   play: function play(e) {
     if (this.state.loading || this.state.adjustPoints) {
       return;
-    }slowfast.play();
+    }this.video().play();
     this.setState({ playing: true });
   },
 
   pause: function pause(e) {
-    slowfast.pause();
+    this.video().pause();
     this.setState({ playing: false });
   },
 
   begin: function begin(e) {
-    slowfast.reset();
-  },
-
-  addPoint: function addPoint() {
-    slowfast.pause();
-
-    if (this.state.adjustPoints == ADDING_POINT) {
-      return this.setState({ adjustPoints: false });
-    }
-    this.setState({ adjustPoints: ADDING_POINT });
-  },
-
-  removePoint: function removePoint() {
-    slowfast.pause();
-
-    if (this.state.adjustPoints == REMOVING_POINT) {
-      return this.setState({ adjustPoints: false });
-    }
-    this.setState({ adjustPoints: REMOVING_POINT });
+    this.pause();
+    this.video().currentTime = 0;
   },
 
   componentDidMount: function componentDidMount() {
@@ -30021,8 +30211,6 @@ var App = React.createClass({
       id = idPattern[2];
     }
 
-    this.setState({ video: id });
-
     fetch("http://vimeo-config.herokuapp.com/" + id + ".json").then(function (response) {
       return response.json();
     }).then(function (json) {
@@ -30032,28 +30220,9 @@ var App = React.createClass({
     });
   },
 
-  transition: function transition(start, end, time) {
-    if (!end) {
-      return start.rate;
-    }
-    if (!this.scaleX) {
-      return start.rate;
-    }
-
-    var index = bisectPath(playingPath, this.scaleX(time), 1);
-    var point = playingPath[index];
-
-    if (!point) {
-      return start.rate;
-    }
-
-    this.playingPoint.attr("cx", point.x).attr("cy", point.y);
-    return this.scaleY.invert(point.y);
-  },
-
   handleDuration: function handleDuration() {
-    var video = this.video();
-    rates = [{ time: 0, rate: 1 }, { time: video.duration, rate: 1 }];
+    var video = this.video(),
+        rates = [{ time: 0, rate: 1 }, { time: video.duration, rate: 1 }];
 
     var ratePattern = window.location.search.match(/(rates=((\d+\.\d+\:\d+\,*)+))/i);
     if (ratePattern) {
@@ -30076,145 +30245,7 @@ var App = React.createClass({
       if (_process.length > 2) rates = _process;
     }
 
-    slowfast = new SlowFast(video, rates, this.transition);
-    this.enableControl();
-    this.setState({ loading: false });
-  },
-
-  redrawRates: function redrawRates(group, path, x, y, line, playingPoint) {
-    var self = this;
-    group.selectAll(".ratePoint").remove();
-    group.selectAll(".ratePoint").data(rates).enter().append("circle").attr("class", "ratePoint").attr("cx", function (rate) {
-      return x(rate.time);
-    }).attr("cy", function (rate) {
-      return y(rate.rate);
-    }).attr("r", markerPointSize).attr("fill", "black").attr("stroke", "black").attr("stroke-width", pointStrokeSize).on("mousedown", function () {
-      focusPoint = d3.select(this);
-    }).on("click", function () {
-      if (self.state.adjustPoints == REMOVING_POINT) {
-        var point = d3.select(this).datum();
-        var index = rates.indexOf(point);
-        if (index == 0 || index == rates.length - 1) return;
-
-        rates = rates.slice(0, index).concat(rates.slice(index + 1));
-        self.redrawRates(group, path, x, y, line, playingPoint);
-      }
-    });
-    this.updatePath(path, x, y, line, playingPoint);
-  },
-
-  updatePath: function updatePath(path, x, y, line, playingPoint) {
-    var video = this.video();
-    playingPath = [];
-
-    path.attr("d", line(rates));
-    var node = path.node();
-    for (var i = 0; i < node.getTotalLength(); i++) {
-      var point = node.getPointAtLength(i);
-      playingPath.push(point);
-    }
-    slowfast.updateRates(rates);
-
-    var location = window.location.toString();
-    if (location.indexOf("?") > 0) {
-      location = location.substring(0, location.indexOf("?"));
-    }
-
-    var encodedRates = rates.map(function (each) {
-      return "" + each.time.toFixed(2) + ":" + each.rate.toFixed(2);
-    }).join(",");
-
-    this.setState({ url: "" + location + "?video=" + this.state.video + "&rates=" + encodedRates });
-    if (window.history) {
-      history.pushState(null, null, "" + location + "?video=" + this.state.video + "&rates=" + encodedRates);
-    }
-  },
-
-  enableControl: function enableControl() {
-    width = this.refs.panel.getDOMNode().clientWidth;
-
-    var video = this.video(),
-        x = d3.scale.linear().domain([0, video.duration]).range([0, width]),
-        y = d3.scale.linear().domain([0.5, 4]).range([height, 0]),
-        line = d3.svg.line().interpolate("monotone").x(function (rate) {
-      return x(rate.time);
-    }).y(function (rate) {
-      return y(rate.rate);
-    }),
-        self = this;
-
-    var panel = d3.select(this.refs.panel.getDOMNode());
-    panel.attr("preserveAspectRatio", "xMinYMin meet").attr("viewBox", "0 0 " + width + " " + height);
-
-    var path = panel.append("path").attr("stroke", "blue").attr("stroke-width", pointStrokeSize).attr("fill", "none"),
-        playingPoint = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].rate)).attr("r", playingPointSize).attr("fill", "white").attr("stroke", "red").attr("stroke-width", pointStrokeSize),
-        ratesGroup = panel.append("g"),
-        marker = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].rate)).attr("r", markerPointSize).attr("fill", "black").attr("display", "none");
-
-    this.redrawRates(ratesGroup, path, x, y, line, playingPoint);
-    this.playingPoint = playingPoint;
-
-    panel.on("click", function () {
-      if (self.state.adjustPoints == ADDING_POINT) {
-        var mouse = d3.mouse(this);
-
-        var time = x.invert(marker.attr("cx"));
-        var rate = y.invert(marker.attr("cy"));
-
-        var index = bisectRate(rates, time);
-        rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index));
-        self.redrawRates(ratesGroup, path, x, y, line, playingPoint);
-        self.setState({ adjustPoints: false });
-      }
-    }).on("mouseover", function () {
-      if (self.state.adjustPoints == ADDING_POINT) {
-        var mouse = d3.mouse(this);
-        marker.attr("display", "inherit");
-      }
-    }).on("mouseout", function () {
-      marker.attr("display", "none");
-    }).on("mousemove", function () {
-      var mouse = d3.mouse(this);
-
-      var newTime = x.invert(mouse[0]);
-      var newRate = y.invert(mouse[1]);
-
-      var index = bisectPath(playingPath, mouse[0], 1);
-
-      if (self.state.adjustPoints == ADDING_POINT) {
-        var point = playingPath[index];
-
-        if (point) {
-          marker.attr("cx", point.x).attr("cy", point.y);
-        }
-      }
-
-      if (!focusPoint) return;
-
-      var rate = focusPoint.datum();
-      var rateIndex = rates.indexOf(rate);
-
-      if (rateIndex > 0) {
-        var previousRate = rates[rateIndex - 1];
-        if (newTime <= previousRate.time) return;
-      }
-
-      if (rateIndex < rates.length - 1) {
-        var nextRate = rates[rateIndex + 1];
-        if (newTime >= nextRate.time) return;
-      }
-
-      rate.time = newTime;
-      rate.rate = newRate;
-
-      focusPoint.attr("cx", mouse[0]).attr("cy", mouse[1]);
-      self.updatePath(path, x, y, line, playingPoint);
-    }).on("mouseup", function () {
-      focusPoint = null;
-    });
-
-    this.scaleX = x;
-    this.scaleY = y;
+    this.setState({ loading: false, rates: rates, video: video });
   },
 
   render: function render() {
@@ -30246,37 +30277,11 @@ var App = React.createClass({
           )
         )
       ),
-      React.createElement(
-        "div",
-        { className: "row" },
-        React.createElement(
-          "div",
-          { className: "col-xs-12" },
-          React.createElement(
-            "div",
-            { className: "slowfast-panel" },
-            React.createElement("svg", { className: "graph", ref: "panel" }),
-            React.createElement(
-              "div",
-              { className: "actions-overlay" },
-              React.createElement(
-                "button",
-                { disabled: this.state.loading || this.state.adjustPoints == REMOVING_POINT, className: "btn btn-default", onClick: this.addPoint },
-                "Add Point"
-              ),
-              React.createElement(
-                "button",
-                { disabled: this.state.loading || this.state.adjustPoints == ADDING_POINT, className: "btn btn-default", onClick: this.removePoint },
-                "Remove Point"
-              )
-            )
-          )
-        )
-      )
+      React.createElement(Panel, { video: this.state.video, initialRates: this.state.rates })
     );
   }
 });
 
 React.render(React.createElement(App, null), document.querySelector("main"));
 
-},{"d3":"/Users/llun/Documents/slowfast/node_modules/d3/d3.js","react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js","slowfast":"/Users/llun/Documents/slowfast/node_modules/slowfast/lib/slowfast.js","whatwg-fetch":"/Users/llun/Documents/slowfast/node_modules/whatwg-fetch/fetch.js"}]},{},["/Users/llun/Documents/slowfast"]);
+},{"./panel":"/Users/llun/Documents/slowfast/js/panel.js","react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js","whatwg-fetch":"/Users/llun/Documents/slowfast/node_modules/whatwg-fetch/fetch.js"}]},{},["/Users/llun/Documents/slowfast"]);
