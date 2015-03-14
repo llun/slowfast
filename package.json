@@ -1,6 +1,6 @@
 {
   "name": "slowfast",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "slowfast",
   "repository": {
     "type": "git",
@@ -9,7 +9,7 @@
   "keywords": [
     "video"
   ],
-  "main": "lib/slowfast.js",
+  "main": "dist/slowfast.js",
   "browserify": {
     "transform": [
       "babelify"
