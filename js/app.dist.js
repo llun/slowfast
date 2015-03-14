@@ -29962,8 +29962,8 @@ var rates = [],
     width = 800,
     height = 200,
     pointStrokeSize = 2,
-    playingPointSize = 20,
-    markerPointSize = 15,
+    playingPointSize = 10,
+    markerPointSize = 8,
     slowfast = null;
 
 var App = React.createClass({
@@ -30088,7 +30088,7 @@ var App = React.createClass({
       return x(rate.time);
     }).attr("cy", function (rate) {
       return y(rate.rate);
-    }).attr("r", markerPointSize).attr("fill", "white").attr("stroke", "black").attr("stroke-width", pointStrokeSize).on("mousedown", function () {
+    }).attr("r", markerPointSize).attr("fill", "black").attr("stroke", "black").attr("stroke-width", pointStrokeSize).on("mousedown", function () {
       focusPoint = d3.select(this);
     }).on("click", function () {
       if (self.state.adjustPoints == REMOVING_POINT) {
@@ -30271,16 +30271,6 @@ var App = React.createClass({
         React.createElement(
           "div",
           { className: "col-xs-12" },
-          React.createElement(
-            "button",
-            { disabled: this.state.loading || this.state.adjustPoints == REMOVING_POINT, className: "btn btn-default", onClick: this.addPoint },
-            "Add Point"
-          ),
-          React.createElement(
-            "button",
-            { disabled: this.state.loading || this.state.adjustPoints == ADDING_POINT, className: "btn btn-default", onClick: this.removePoint },
-            "Remove Point"
-          ),
           React.createElement("input", { type: "text", className: "form-control", readOnly: true, value: this.state.url })
         )
       ),
@@ -30290,7 +30280,25 @@ var App = React.createClass({
         React.createElement(
           "div",
           { className: "col-xs-12" },
-          React.createElement("svg", { className: "slowfast-panel", ref: "panel" })
+          React.createElement(
+            "div",
+            { className: "slowfast-panel" },
+            React.createElement("svg", { className: "graph", ref: "panel" }),
+            React.createElement(
+              "div",
+              { className: "actions-overlay" },
+              React.createElement(
+                "button",
+                { disabled: this.state.loading || this.state.adjustPoints == REMOVING_POINT, className: "btn btn-default", onClick: this.addPoint },
+                "Add Point"
+              ),
+              React.createElement(
+                "button",
+                { disabled: this.state.loading || this.state.adjustPoints == ADDING_POINT, className: "btn btn-default", onClick: this.removePoint },
+                "Remove Point"
+              )
+            )
+          )
         )
       )
     );

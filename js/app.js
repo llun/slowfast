@@ -13,8 +13,8 @@ let rates = []
   , width = 800
   , height = 200
   , pointStrokeSize = 2
-  , playingPointSize = 20
-  , markerPointSize = 15
+  , playingPointSize = 10
+  , markerPointSize = 8
   , slowfast = null
 
 let App = React.createClass({
@@ -133,7 +133,7 @@ let App = React.createClass({
           .attr('cx', rate => { return x(rate.time) })
           .attr('cy', rate => { return y(rate.rate) })
           .attr('r',  markerPointSize)
-          .attr('fill', 'white')
+          .attr('fill', 'black')
           .attr('stroke', 'black')
           .attr('stroke-width', pointStrokeSize)
           .on('mousedown', function() {
@@ -300,16 +300,20 @@ let App = React.createClass({
         
         <div className="row">
           <div className="col-xs-12">
-            <button disabled={this.state.loading || (this.state.adjustPoints == REMOVING_POINT)} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
-            <button disabled={this.state.loading || (this.state.adjustPoints == ADDING_POINT)} className="btn btn-default" onClick={this.removePoint}>Remove Point</button>
-
             <input type="text" className="form-control" readOnly value={this.state.url} />
           </div>
         </div>
 
         <div className="row">
           <div className="col-xs-12">
-            <svg className="slowfast-panel" ref="panel"></svg>
+            <div className="slowfast-panel">
+              <svg className="graph" ref="panel"></svg>
+
+              <div className="actions-overlay">
+                <button disabled={this.state.loading || (this.state.adjustPoints == REMOVING_POINT)} className="btn btn-default" onClick={this.addPoint}>Add Point</button>
+                <button disabled={this.state.loading || (this.state.adjustPoints == ADDING_POINT)} className="btn btn-default" onClick={this.removePoint}>Remove Point</button>
+              </div>
+            </div>
           </div>
         </div>
 
