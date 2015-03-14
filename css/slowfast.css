@@ -3,6 +3,11 @@ header .fast {
   font-weight: lighter;
 }
 
+footer {
+  font-size: 12px;
+  font-weight: bold;
+}
+
 .player {
   background: black;
   
@@ -81,7 +86,7 @@ header .fast {
 .slowfast-panel {
   position: relative;
   width: 100%;
-  
+
   margin-top: 10px;
 }
 

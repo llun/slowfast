@@ -277,15 +277,7 @@ let App = React.createClass({
     })
 
     return (
-      <div className="container-fluid">
-
-        <div className="row">
-          <div className="col-xs-12">
-            <header className="text-center">
-              <h1>Slow<span className="fast">Fast</span></h1>
-            </header>
-          </div>
-        </div>
+      <div className="app">
 
         <div className="row">
           <div className="col-xs-12 player">
@@ -321,5 +313,5 @@ let App = React.createClass({
 
 React.render(
   <App />,
-  document.querySelector('body')
+  document.querySelector('main')
   )

@@ -30225,29 +30225,7 @@ var App = React.createClass({
 
     return React.createElement(
       "div",
-      { className: "container-fluid" },
-      React.createElement(
-        "div",
-        { className: "row" },
-        React.createElement(
-          "div",
-          { className: "col-xs-12" },
-          React.createElement(
-            "header",
-            { className: "text-center" },
-            React.createElement(
-              "h1",
-              null,
-              "Slow",
-              React.createElement(
-                "span",
-                { className: "fast" },
-                "Fast"
-              )
-            )
-          )
-        )
-      ),
+      { className: "app" },
       React.createElement(
         "div",
         { className: "row" },
@@ -30299,6 +30277,6 @@ var App = React.createClass({
   }
 });
 
-React.render(React.createElement(App, null), document.querySelector("body"));
+React.render(React.createElement(App, null), document.querySelector("main"));
 
 },{"d3":"/Users/llun/Documents/slowfast/node_modules/d3/d3.js","react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js","slowfast":"/Users/llun/Documents/slowfast/node_modules/slowfast/lib/slowfast.js","whatwg-fetch":"/Users/llun/Documents/slowfast/node_modules/whatwg-fetch/fetch.js"}]},{},["/Users/llun/Documents/slowfast"]);
