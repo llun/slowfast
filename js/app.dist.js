@@ -220,11 +220,15 @@ var Panel = React.createClass({
   render: function render() {
     return React.createElement(
       "div",
-      { className: "row slowfast-panel" },
+      { className: "row" },
       React.createElement(
         "div",
         { className: "col-xs-12" },
-        React.createElement("svg", { className: "graph", ref: "panel" })
+        React.createElement(
+          "div",
+          { className: "slowfast-panel" },
+          React.createElement("svg", { className: "graph", ref: "panel" })
+        )
       )
     );
   }

@@ -209,9 +209,13 @@ let Panel = React.createClass({
 
   render() {
     return (
-      <div className="row slowfast-panel">
+      <div className="row">
         <div className="col-xs-12">
-          <svg className="graph" ref="panel"></svg>
+        
+          <div className="slowfast-panel">
+            <svg className="graph" ref="panel"></svg>
+          </div>
+          
         </div>
       </div>
       )
