@@ -2,6 +2,8 @@ import React from 'react/addons'
 import d3 from 'd3'
 import SlowFast from 'slowfast'
 
+import Tooltip from './tooltip'
+
 const ADDING_POINT = 'adding', REMOVING_POINT = 'removing'
 
 let rates = []
@@ -15,22 +17,24 @@ let rates = []
   , playingPointSize = 10
   , markerPointSize = 8
   , slowfast = null
+  , addingPointTimeout = null
 
-let Panel = React.createClass({
-  getInitialState() {
-    return { adjustPoints: false }
-  },
+export default class Panel extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { adjustPoints: false, addingPoint: false }
+  }
 
   componentDidMount() {
     this.drawPanel()
     window.addEventListener('resize', event => {
       this.drawPanel()
     })
-  },
+  }
 
   componentDidUpdate() {
     this.drawPanel()
-  },
+  }
 
   drawPanel() {
     if (this.props.initialRates.length == 0) {
@@ -52,7 +56,7 @@ let Panel = React.createClass({
       .attr("preserveAspectRatio", "xMinYMin meet")
       .attr("viewBox", `0 0 ${width} ${height}`)
 
-    let path = panel.append('path').attr('stroke', 'blue').attr('stroke-width', pointStrokeSize).attr('fill', 'none')
+    let path = panel.append('path').attr('stroke', 'black').attr('stroke-width', pointStrokeSize).attr('fill', 'none')
       , playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].rate)).attr('r', playingPointSize).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', pointStrokeSize)
       , ratesGroup = panel.append('g')
       , marker = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].rate)).attr('r', markerPointSize).attr('fill', 'black').attr('display', 'none')
@@ -83,6 +87,16 @@ let Panel = React.createClass({
           self.redrawRates(ratesGroup, path, x, y, line, playingPoint)
           self.setState({ adjustPoints: false })
         }
+      })
+      .on('mousedown', function() {
+        let mouse = d3.mouse(this)
+
+        clearTimeout(addingPointTimeout)
+        addingPointTimeout = setTimeout(() => {
+
+
+          self.setState({ addingPoint: { x: mouse[0], y: mouse[1] } })
+        }, 2000)
       })
       .on('mouseover', function() {
         if (self.state.adjustPoints == ADDING_POINT) {
@@ -132,8 +146,9 @@ let Panel = React.createClass({
       })
       .on('mouseup', () => {
         focusPoint = null
+        clearTimeout(addingPointTimeout)
       })    
-  },
+  }
 
   addPoint() {
     slowfast.pause()
@@ -142,7 +157,7 @@ let Panel = React.createClass({
       return this.setState({ adjustPoints: false })
     }
     this.setState({ adjustPoints: ADDING_POINT })
-  },
+  }
 
   removePoint() {
     slowfast.pause()
@@ -151,7 +166,7 @@ let Panel = React.createClass({
       return this.setState({ adjustPoints: false })
     }
     this.setState({ adjustPoints: REMOVING_POINT })
-  },
+  }
 
   redrawRates(group, path, x, y, line, playingPoint) {
     let self = this
@@ -180,7 +195,7 @@ let Panel = React.createClass({
             }
           })
     this.updatePath(path, x, y, line, playingPoint)
-  },
+  }
 
   updatePath(path, x, y, line, playingPoint) {
     playingPath = []
@@ -205,9 +220,15 @@ let Panel = React.createClass({
     if (window.history) {
       history.pushState(null, null, `${location}?video=${this.props.videoID}&rates=${encodedRates}`);
     }
-  },
+  }
 
   render() {
+    let tooltipStyle = {
+      opacity: this.state.addingPoint ? 1 : 0,
+      top: this.state.addingPoint.y,
+      left: this.state.addingPoint.x
+    }
+
     return (
       <div className="row">
         <div className="col-xs-12">
@@ -215,11 +236,11 @@ let Panel = React.createClass({
           <div className="slowfast-panel">
             <svg className="graph" ref="panel"></svg>
           </div>
+
+          <Tooltip ref="addPointTooltip" style={tooltipStyle} message="Add Point" />
           
         </div>
       </div>
       )
   }
-})
-
-export default Panel
+}

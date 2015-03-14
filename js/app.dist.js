@@ -3,11 +3,21 @@
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
 var React = _interopRequire(require("react/addons"));
 
 var d3 = _interopRequire(require("d3"));
 
 var SlowFast = _interopRequire(require("slowfast"));
+
+var Tooltip = _interopRequire(require("./tooltip"));
 
 var ADDING_POINT = "adding",
     REMOVING_POINT = "removing";
@@ -26,217 +36,296 @@ var rates = [],
     pointStrokeSize = 2,
     playingPointSize = 10,
     markerPointSize = 8,
-    slowfast = null;
+    slowfast = null,
+    addingPointTimeout = null;
 
-var Panel = React.createClass({
-  displayName: "Panel",
+var Panel = (function (_React$Component) {
+  function Panel(props) {
+    _classCallCheck(this, Panel);
 
-  getInitialState: function getInitialState() {
-    return { adjustPoints: false };
-  },
+    _get(Object.getPrototypeOf(Panel.prototype), "constructor", this).call(this, props);
+    this.state = { adjustPoints: false, addingPoint: false };
+  }
 
-  componentDidMount: function componentDidMount() {
-    var _this = this;
+  _inherits(Panel, _React$Component);
 
-    this.drawPanel();
-    window.addEventListener("resize", function (event) {
-      _this.drawPanel();
-    });
-  },
+  _createClass(Panel, {
+    componentDidMount: {
+      value: function componentDidMount() {
+        var _this = this;
 
-  componentDidUpdate: function componentDidUpdate() {
-    this.drawPanel();
-  },
-
-  drawPanel: function drawPanel() {
-    if (this.props.initialRates.length == 0) {
-      return;
-    }
-
-    var video = this.props.video,
-        width = this.refs.panel.getDOMNode().clientWidth,
-        x = d3.scale.linear().domain([0, video.duration]).range([0, width]),
-        y = d3.scale.linear().domain([0.5, 4]).range([height, 0]),
-        line = d3.svg.line().interpolate("monotone").x(function (rate) {
-      return x(rate.time);
-    }).y(function (rate) {
-      return y(rate.rate);
-    }),
-        self = this;
-
-    rates = this.props.initialRates;
-
-    var panel = d3.select(this.refs.panel.getDOMNode());
-    panel.selectAll("*").remove();
-    panel.attr("preserveAspectRatio", "xMinYMin meet").attr("viewBox", "0 0 " + width + " " + height);
-
-    var path = panel.append("path").attr("stroke", "blue").attr("stroke-width", pointStrokeSize).attr("fill", "none"),
-        playingPoint = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].rate)).attr("r", playingPointSize).attr("fill", "white").attr("stroke", "red").attr("stroke-width", pointStrokeSize),
-        ratesGroup = panel.append("g"),
-        marker = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].rate)).attr("r", markerPointSize).attr("fill", "black").attr("display", "none");
-
-    slowfast = new SlowFast(video, rates, function (start, end, time) {
-      if (!end) {
-        return start.rate;
+        this.drawPanel();
+        window.addEventListener("resize", function (event) {
+          _this.drawPanel();
+        });
       }
-
-      var index = bisectPath(playingPath, x(time), 1),
-          point = playingPath[index];
-
-      if (!point) {
-        return start.rate;
+    },
+    componentDidUpdate: {
+      value: function componentDidUpdate() {
+        this.drawPanel();
       }
-      playingPoint.attr("cx", point.x).attr("cy", point.y);
-      return y.invert(point.y);
-    });
-    this.redrawRates(ratesGroup, path, x, y, line, playingPoint);
-    this.playingPoint = playingPoint;
+    },
+    drawPanel: {
+      value: function drawPanel() {
+        if (this.props.initialRates.length == 0) {
+          return;
+        }
 
-    panel.on("click", function () {
-      if (self.state.adjustPoints == ADDING_POINT) {
-        var mouse = d3.mouse(this);
+        var video = this.props.video,
+            width = this.refs.panel.getDOMNode().clientWidth,
+            x = d3.scale.linear().domain([0, video.duration]).range([0, width]),
+            y = d3.scale.linear().domain([0.5, 4]).range([height, 0]),
+            line = d3.svg.line().interpolate("monotone").x(function (rate) {
+          return x(rate.time);
+        }).y(function (rate) {
+          return y(rate.rate);
+        }),
+            self = this;
 
-        var time = x.invert(marker.attr("cx"));
-        var rate = y.invert(marker.attr("cy"));
+        rates = this.props.initialRates;
 
-        var index = bisectRate(rates, time);
-        rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index));
-        self.redrawRates(ratesGroup, path, x, y, line, playingPoint);
-        self.setState({ adjustPoints: false });
+        var panel = d3.select(this.refs.panel.getDOMNode());
+        panel.selectAll("*").remove();
+        panel.attr("preserveAspectRatio", "xMinYMin meet").attr("viewBox", "0 0 " + width + " " + height);
+
+        var path = panel.append("path").attr("stroke", "black").attr("stroke-width", pointStrokeSize).attr("fill", "none"),
+            playingPoint = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].rate)).attr("r", playingPointSize).attr("fill", "white").attr("stroke", "red").attr("stroke-width", pointStrokeSize),
+            ratesGroup = panel.append("g"),
+            marker = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].rate)).attr("r", markerPointSize).attr("fill", "black").attr("display", "none");
+
+        slowfast = new SlowFast(video, rates, function (start, end, time) {
+          if (!end) {
+            return start.rate;
+          }
+
+          var index = bisectPath(playingPath, x(time), 1),
+              point = playingPath[index];
+
+          if (!point) {
+            return start.rate;
+          }
+          playingPoint.attr("cx", point.x).attr("cy", point.y);
+          return y.invert(point.y);
+        });
+        this.redrawRates(ratesGroup, path, x, y, line, playingPoint);
+        this.playingPoint = playingPoint;
+
+        panel.on("click", function () {
+          if (self.state.adjustPoints == ADDING_POINT) {
+            var mouse = d3.mouse(this);
+
+            var time = x.invert(marker.attr("cx"));
+            var rate = y.invert(marker.attr("cy"));
+
+            var index = bisectRate(rates, time);
+            rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index));
+            self.redrawRates(ratesGroup, path, x, y, line, playingPoint);
+            self.setState({ adjustPoints: false });
+          }
+        }).on("mousedown", function () {
+          var mouse = d3.mouse(this);
+
+          clearTimeout(addingPointTimeout);
+          addingPointTimeout = setTimeout(function () {
+
+            self.setState({ addingPoint: { x: mouse[0], y: mouse[1] } });
+          }, 2000);
+        }).on("mouseover", function () {
+          if (self.state.adjustPoints == ADDING_POINT) {
+            var mouse = d3.mouse(this);
+            marker.attr("display", "inherit");
+          }
+        }).on("mouseout", function () {
+          marker.attr("display", "none");
+        }).on("mousemove", function () {
+          var mouse = d3.mouse(this);
+
+          var newTime = x.invert(mouse[0]);
+          var newRate = y.invert(mouse[1]);
+
+          var index = bisectPath(playingPath, mouse[0], 1);
+
+          if (self.state.adjustPoints == ADDING_POINT) {
+            var point = playingPath[index];
+
+            if (point) {
+              marker.attr("cx", point.x).attr("cy", point.y);
+            }
+          }
+
+          if (!focusPoint) return;
+
+          var rate = focusPoint.datum();
+          var rateIndex = rates.indexOf(rate);
+
+          if (rateIndex > 0) {
+            var previousRate = rates[rateIndex - 1];
+            if (newTime <= previousRate.time) return;
+          }
+
+          if (rateIndex < rates.length - 1) {
+            var nextRate = rates[rateIndex + 1];
+            if (newTime >= nextRate.time) return;
+          }
+
+          rate.time = newTime;
+          rate.rate = newRate;
+
+          focusPoint.attr("cx", mouse[0]).attr("cy", mouse[1]);
+          self.updatePath(path, x, y, line, playingPoint);
+        }).on("mouseup", function () {
+          focusPoint = null;
+          clearTimeout(addingPointTimeout);
+        });
       }
-    }).on("mouseover", function () {
-      if (self.state.adjustPoints == ADDING_POINT) {
-        var mouse = d3.mouse(this);
-        marker.attr("display", "inherit");
+    },
+    addPoint: {
+      value: function addPoint() {
+        slowfast.pause();
+
+        if (this.state.adjustPoints == ADDING_POINT) {
+          return this.setState({ adjustPoints: false });
+        }
+        this.setState({ adjustPoints: ADDING_POINT });
       }
-    }).on("mouseout", function () {
-      marker.attr("display", "none");
-    }).on("mousemove", function () {
-      var mouse = d3.mouse(this);
+    },
+    removePoint: {
+      value: function removePoint() {
+        slowfast.pause();
 
-      var newTime = x.invert(mouse[0]);
-      var newRate = y.invert(mouse[1]);
+        if (this.state.adjustPoints == REMOVING_POINT) {
+          return this.setState({ adjustPoints: false });
+        }
+        this.setState({ adjustPoints: REMOVING_POINT });
+      }
+    },
+    redrawRates: {
+      value: function redrawRates(group, path, x, y, line, playingPoint) {
+        var self = this;
+        group.selectAll(".ratePoint").remove();
+        group.selectAll(".ratePoint").data(rates).enter().append("circle").attr("class", "ratePoint").attr("cx", function (rate) {
+          return x(rate.time);
+        }).attr("cy", function (rate) {
+          return y(rate.rate);
+        }).attr("r", markerPointSize).attr("fill", "black").attr("stroke", "black").attr("stroke-width", pointStrokeSize).on("mousedown", function () {
+          focusPoint = d3.select(this);
+        }).on("click", function () {
+          if (self.state.adjustPoints == REMOVING_POINT) {
+            var point = d3.select(this).datum();
+            var index = rates.indexOf(point);
+            if (index == 0 || index == rates.length - 1) return;
 
-      var index = bisectPath(playingPath, mouse[0], 1);
+            rates = rates.slice(0, index).concat(rates.slice(index + 1));
+            self.redrawRates(group, path, x, y, line, playingPoint);
+          }
+        });
+        this.updatePath(path, x, y, line, playingPoint);
+      }
+    },
+    updatePath: {
+      value: function updatePath(path, x, y, line, playingPoint) {
+        playingPath = [];
 
-      if (self.state.adjustPoints == ADDING_POINT) {
-        var point = playingPath[index];
+        path.attr("d", line(rates));
+        var node = path.node();
+        for (var i = 0; i < node.getTotalLength(); i++) {
+          var point = node.getPointAtLength(i);
+          playingPath.push(point);
+        }
+        slowfast.updateRates(rates);
 
-        if (point) {
-          marker.attr("cx", point.x).attr("cy", point.y);
+        var location = window.location.toString();
+        if (location.indexOf("?") > 0) {
+          location = location.substring(0, location.indexOf("?"));
+        }
+
+        var encodedRates = rates.map(function (each) {
+          return "" + each.time.toFixed(2) + ":" + each.rate.toFixed(2);
+        }).join(",");
+
+        if (window.history) {
+          history.pushState(null, null, "" + location + "?video=" + this.props.videoID + "&rates=" + encodedRates);
         }
       }
+    },
+    render: {
+      value: function render() {
+        var tooltipStyle = {
+          opacity: this.state.addingPoint ? 1 : 0,
+          top: this.state.addingPoint.y,
+          left: this.state.addingPoint.x
+        };
 
-      if (!focusPoint) return;
-
-      var rate = focusPoint.datum();
-      var rateIndex = rates.indexOf(rate);
-
-      if (rateIndex > 0) {
-        var previousRate = rates[rateIndex - 1];
-        if (newTime <= previousRate.time) return;
-      }
-
-      if (rateIndex < rates.length - 1) {
-        var nextRate = rates[rateIndex + 1];
-        if (newTime >= nextRate.time) return;
-      }
-
-      rate.time = newTime;
-      rate.rate = newRate;
-
-      focusPoint.attr("cx", mouse[0]).attr("cy", mouse[1]);
-      self.updatePath(path, x, y, line, playingPoint);
-    }).on("mouseup", function () {
-      focusPoint = null;
-    });
-  },
-
-  addPoint: function addPoint() {
-    slowfast.pause();
-
-    if (this.state.adjustPoints == ADDING_POINT) {
-      return this.setState({ adjustPoints: false });
-    }
-    this.setState({ adjustPoints: ADDING_POINT });
-  },
-
-  removePoint: function removePoint() {
-    slowfast.pause();
-
-    if (this.state.adjustPoints == REMOVING_POINT) {
-      return this.setState({ adjustPoints: false });
-    }
-    this.setState({ adjustPoints: REMOVING_POINT });
-  },
-
-  redrawRates: function redrawRates(group, path, x, y, line, playingPoint) {
-    var self = this;
-    group.selectAll(".ratePoint").remove();
-    group.selectAll(".ratePoint").data(rates).enter().append("circle").attr("class", "ratePoint").attr("cx", function (rate) {
-      return x(rate.time);
-    }).attr("cy", function (rate) {
-      return y(rate.rate);
-    }).attr("r", markerPointSize).attr("fill", "black").attr("stroke", "black").attr("stroke-width", pointStrokeSize).on("mousedown", function () {
-      focusPoint = d3.select(this);
-    }).on("click", function () {
-      if (self.state.adjustPoints == REMOVING_POINT) {
-        var point = d3.select(this).datum();
-        var index = rates.indexOf(point);
-        if (index == 0 || index == rates.length - 1) return;
-
-        rates = rates.slice(0, index).concat(rates.slice(index + 1));
-        self.redrawRates(group, path, x, y, line, playingPoint);
-      }
-    });
-    this.updatePath(path, x, y, line, playingPoint);
-  },
-
-  updatePath: function updatePath(path, x, y, line, playingPoint) {
-    playingPath = [];
-
-    path.attr("d", line(rates));
-    var node = path.node();
-    for (var i = 0; i < node.getTotalLength(); i++) {
-      var point = node.getPointAtLength(i);
-      playingPath.push(point);
-    }
-    slowfast.updateRates(rates);
-
-    var location = window.location.toString();
-    if (location.indexOf("?") > 0) {
-      location = location.substring(0, location.indexOf("?"));
-    }
-
-    var encodedRates = rates.map(function (each) {
-      return "" + each.time.toFixed(2) + ":" + each.rate.toFixed(2);
-    }).join(",");
-
-    if (window.history) {
-      history.pushState(null, null, "" + location + "?video=" + this.props.videoID + "&rates=" + encodedRates);
-    }
-  },
-
-  render: function render() {
-    return React.createElement(
-      "div",
-      { className: "row" },
-      React.createElement(
-        "div",
-        { className: "col-xs-12" },
-        React.createElement(
+        return React.createElement(
           "div",
-          { className: "slowfast-panel" },
-          React.createElement("svg", { className: "graph", ref: "panel" })
-        )
-      )
-    );
-  }
-});
+          { className: "row" },
+          React.createElement(
+            "div",
+            { className: "col-xs-12" },
+            React.createElement(
+              "div",
+              { className: "slowfast-panel" },
+              React.createElement("svg", { className: "graph", ref: "panel" })
+            ),
+            React.createElement(Tooltip, { ref: "addPointTooltip", style: tooltipStyle, message: "Add Point" })
+          )
+        );
+      }
+    }
+  });
+
+  return Panel;
+})(React.Component);
 
 module.exports = Panel;
 
-},{"d3":"/Users/llun/Documents/slowfast/node_modules/d3/d3.js","react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js","slowfast":"/Users/llun/Documents/slowfast/node_modules/slowfast/lib/slowfast.js"}],"/Users/llun/Documents/slowfast/node_modules/d3/d3.js":[function(require,module,exports){
+},{"./tooltip":"/Users/llun/Documents/slowfast/js/tooltip.js","d3":"/Users/llun/Documents/slowfast/node_modules/d3/d3.js","react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js","slowfast":"/Users/llun/Documents/slowfast/node_modules/slowfast/lib/slowfast.js"}],"/Users/llun/Documents/slowfast/js/tooltip.js":[function(require,module,exports){
+"use strict";
+
+var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+var React = _interopRequire(require("react/addons"));
+
+var Tooltip = (function (_React$Component) {
+  function Tooltip() {
+    _classCallCheck(this, Tooltip);
+
+    if (_React$Component != null) {
+      _React$Component.apply(this, arguments);
+    }
+  }
+
+  _inherits(Tooltip, _React$Component);
+
+  _createClass(Tooltip, {
+    render: {
+      value: function render() {
+        return React.createElement(
+          "div",
+          { className: "tooltip top", style: this.props.style },
+          React.createElement("div", { className: "tooltip-arrow" }),
+          React.createElement(
+            "div",
+            { className: "tooltip-inner" },
+            this.props.message
+          )
+        );
+      }
+    }
+  });
+
+  return Tooltip;
+})(React.Component);
+
+module.exports = Tooltip;
+
+},{"react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js"}],"/Users/llun/Documents/slowfast/node_modules/d3/d3.js":[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.5"
@@ -31929,123 +32018,146 @@ process.umask = function() { return 0; };
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
 var React = _interopRequire(require("react/addons"));
 
 var wg_fetch = _interopRequire(require("whatwg-fetch"));
 
 var Panel = _interopRequire(require("./panel"));
 
-var App = React.createClass({
-  displayName: "App",
+var App = (function (_React$Component) {
+  function App(props) {
+    _classCallCheck(this, App);
 
-  getInitialState: function getInitialState() {
-    return { loading: true, playing: false, videoID: "", rates: [] };
-  },
+    _get(Object.getPrototypeOf(App.prototype), "constructor", this).call(this, props);
+    this.state = { loading: true, playing: false, videoID: "", rates: [] };
+  }
 
-  video: function video() {
-    return this.refs.video.getDOMNode();
-  },
+  _inherits(App, _React$Component);
 
-  play: function play(e) {
-    if (this.state.loading || this.state.adjustPoints) {
-      return;
-    }this.video().play();
-    this.setState({ playing: true });
-  },
+  _createClass(App, {
+    video: {
+      value: function video() {
+        return this.refs.video.getDOMNode();
+      }
+    },
+    play: {
+      value: function play(e) {
+        if (this.state.loading || this.state.adjustPoints) {
+          return;
+        }this.video().play();
+        this.setState({ playing: true });
+      }
+    },
+    pause: {
+      value: function pause(e) {
+        this.video().pause();
+        this.setState({ playing: false });
+      }
+    },
+    begin: {
+      value: function begin(e) {
+        this.pause();
+        this.video().currentTime = 0;
+      }
+    },
+    componentDidMount: {
+      value: function componentDidMount() {
+        var _this = this;
 
-  pause: function pause(e) {
-    this.video().pause();
-    this.setState({ playing: false });
-  },
+        var video = this.video();
 
-  begin: function begin(e) {
-    this.pause();
-    this.video().currentTime = 0;
-  },
+        var idPattern = window.location.search.match(/(video=(\d+))/i);
+        var id = "95251007";
+        if (idPattern) {
+          id = idPattern[2];
+        }
 
-  componentDidMount: function componentDidMount() {
-    var _this = this;
+        this.setState({ videoID: id });
 
-    var video = this.video();
+        fetch("http://vimeo-config.herokuapp.com/" + id + ".json").then(function (response) {
+          return response.json();
+        }).then(function (json) {
+          video.src = json.request.files.h264.sd.url;
+          video.poster = json.video.thumbs.base;
+          video.addEventListener("durationchange", _this.handleDuration.bind(_this));
+        });
+      }
+    },
+    handleDuration: {
+      value: function handleDuration() {
+        var video = this.video(),
+            rates = [{ time: 0, rate: 1 }, { time: video.duration, rate: 1 }];
 
-    var idPattern = window.location.search.match(/(video=(\d+))/i);
-    var id = "95251007";
-    if (idPattern) {
-      id = idPattern[2];
-    }
+        var ratePattern = window.location.search.match(/(rates=((\d+\.\d+\:\d+\,*)+))/i);
+        if (ratePattern) {
+          var data = ratePattern[2];
+          var _process = data.split(",").map(function (each) {
+            var value = each.split(":");
+            if (value.length < 2) {
+              return { time: -1, value: -1 };
+            } // Invalid data
 
-    this.setState({ videoID: id });
+            if (value[0] < 0) value[0] = 0;
+            if (value[0] > video.duration) value[0] = video.duration;
 
-    fetch("http://vimeo-config.herokuapp.com/" + id + ".json").then(function (response) {
-      return response.json();
-    }).then(function (json) {
-      video.src = json.request.files.h264.sd.url;
-      video.poster = json.video.thumbs.base;
-      video.addEventListener("durationchange", _this.handleDuration);
-    });
-  },
+            if (value[1] < 0.5) value[1] = 0.5;
+            if (value[1] > 4) value[1] = 4;
 
-  handleDuration: function handleDuration() {
-    var video = this.video(),
-        rates = [{ time: 0, rate: 1 }, { time: video.duration, rate: 1 }];
+            return { time: value[0], rate: value[1] };
+          });
 
-    var ratePattern = window.location.search.match(/(rates=((\d+\.\d+\:\d+\,*)+))/i);
-    if (ratePattern) {
-      var data = ratePattern[2];
-      var _process = data.split(",").map(function (each) {
-        var value = each.split(":");
-        if (value.length < 2) {
-          return { time: -1, value: -1 };
-        } // Invalid data
+          if (_process.length > 2) rates = _process;
+        }
 
-        if (value[0] < 0) value[0] = 0;
-        if (value[0] > video.duration) value[0] = video.duration;
+        this.setState({ loading: false, rates: rates, video: video });
+      }
+    },
+    render: {
+      value: function render() {
+        var videoClassNames = React.addons.classSet({
+          video: true,
+          playing: this.state.playing
+        });
 
-        if (value[1] < 0.5) value[1] = 0.5;
-        if (value[1] > 4) value[1] = 4;
-
-        return { time: value[0], rate: value[1] };
-      });
-
-      if (_process.length > 2) rates = _process;
-    }
-
-    this.setState({ loading: false, rates: rates, video: video });
-  },
-
-  render: function render() {
-    var videoClassNames = React.addons.classSet({
-      video: true,
-      playing: this.state.playing
-    });
-
-    return React.createElement(
-      "div",
-      { className: "app" },
-      React.createElement(
-        "div",
-        { className: "row" },
-        React.createElement(
+        return React.createElement(
           "div",
-          { className: "col-xs-12 player" },
+          { className: "app" },
           React.createElement(
             "div",
-            { className: videoClassNames },
-            React.createElement("video", { ref: "video" }),
+            { className: "row" },
             React.createElement(
               "div",
-              { className: "control" },
-              React.createElement("i", { className: "fa fa-play play", onClick: this.play }),
-              React.createElement("i", { className: "fa fa-step-backward begin", onClick: this.begin }),
-              React.createElement("i", { className: "fa fa-pause pause", onClick: this.pause })
+              { className: "col-xs-12 player" },
+              React.createElement(
+                "div",
+                { className: videoClassNames },
+                React.createElement("video", { ref: "video" }),
+                React.createElement(
+                  "div",
+                  { className: "control" },
+                  React.createElement("i", { className: "fa fa-play play", onClick: this.play }),
+                  React.createElement("i", { className: "fa fa-step-backward begin", onClick: this.begin }),
+                  React.createElement("i", { className: "fa fa-pause pause", onClick: this.pause })
+                )
+              )
             )
-          )
-        )
-      ),
-      React.createElement(Panel, { video: this.state.video, initialRates: this.state.rates, videoID: this.state.videoID })
-    );
-  }
-});
+          ),
+          React.createElement(Panel, { video: this.state.video, initialRates: this.state.rates, videoID: this.state.videoID })
+        );
+      }
+    }
+  });
+
+  return App;
+})(React.Component);
 
 React.render(React.createElement(App, null), document.querySelector("main"));
 

@@ -3,31 +3,33 @@ import wg_fetch from 'whatwg-fetch'
 
 import Panel from './panel'
 
-let App = React.createClass({
-  getInitialState() {
-    return { loading: true, playing: false, videoID: '', rates: [] }
-  },
+class App extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { loading: true, playing: false, videoID: '', rates: [] }
+
+  }
 
   video() {
     return this.refs.video.getDOMNode()
-  },
+  }
 
   play(e) {
     if (this.state.loading || this.state.adjustPoints) return
 
     this.video().play()
     this.setState({ playing: true })
-  },
+  }
 
   pause(e) {
     this.video().pause()
     this.setState({ playing: false })
-  },
+  }
 
   begin(e) {
     this.pause()
     this.video().currentTime = 0;
-  },
+  }
 
   componentDidMount() {
     let video = this.video()
@@ -45,9 +47,9 @@ let App = React.createClass({
       .then(json => {
         video.src = json.request.files.h264.sd.url
         video.poster = json.video.thumbs.base
-        video.addEventListener('durationchange', this.handleDuration)
+        video.addEventListener('durationchange', this.handleDuration.bind(this))
       })
-  },
+  }
 
   handleDuration() {
     let video = this.video()
@@ -76,7 +78,7 @@ let App = React.createClass({
     }
 
     this.setState({ loading: false, rates: rates, video: video })
-  },
+  }
 
   render() {
     let videoClassNames = React.addons.classSet({
@@ -105,7 +107,7 @@ let App = React.createClass({
       </div>
       )
   }
-})
+}
 
 React.render(
   <App />,
