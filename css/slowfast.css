@@ -81,6 +81,8 @@ header .fast {
 .slowfast-panel {
   position: relative;
   width: 100%;
+  
+  margin-top: 10px;
 }
 
 .slowfast-panel .graph {

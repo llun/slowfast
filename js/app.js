@@ -174,6 +174,9 @@ let App = React.createClass({
     }).join(',')
 
     this.setState({ url: `${location}?video=${this.state.video}&rates=${encodedRates}` })
+    if (window.history) {
+      history.pushState(null, null, `${location}?video=${this.state.video}&rates=${encodedRates}`);
+    }
   },
 
   enableControl() {
@@ -295,12 +298,6 @@ let App = React.createClass({
                 <i className="fa fa-pause pause" onClick={this.pause}></i>
               </div>
             </div>
-          </div>
-        </div>
-        
-        <div className="row">
-          <div className="col-xs-12">
-            <input type="text" className="form-control" readOnly value={this.state.url} />
           </div>
         </div>
 

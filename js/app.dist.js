@@ -30125,6 +30125,9 @@ var App = React.createClass({
     }).join(",");
 
     this.setState({ url: "" + location + "?video=" + this.state.video + "&rates=" + encodedRates });
+    if (window.history) {
+      history.pushState(null, null, "" + location + "?video=" + this.state.video + "&rates=" + encodedRates);
+    }
   },
 
   enableControl: function enableControl() {
@@ -30263,15 +30266,6 @@ var App = React.createClass({
               React.createElement("i", { className: "fa fa-pause pause", onClick: this.pause })
             )
           )
-        )
-      ),
-      React.createElement(
-        "div",
-        { className: "row" },
-        React.createElement(
-          "div",
-          { className: "col-xs-12" },
-          React.createElement("input", { type: "text", className: "form-control", readOnly: true, value: this.state.url })
         )
       ),
       React.createElement(
