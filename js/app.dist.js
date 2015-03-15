@@ -37,14 +37,15 @@ var rates = [],
     playingPointSize = 10,
     markerPointSize = 8,
     slowfast = null,
-    addingPointTimeout = null;
+    addingPointTimeout = null,
+    initial = false;
 
 var Panel = (function (_React$Component) {
   function Panel(props) {
     _classCallCheck(this, Panel);
 
     _get(Object.getPrototypeOf(Panel.prototype), "constructor", this).call(this, props);
-    this.state = { adjustPoints: false, addingPoint: false };
+    this.state = { adjustPoints: false, addingPoint: false, initial: false };
   }
 
   _inherits(Panel, _React$Component);
@@ -54,20 +55,20 @@ var Panel = (function (_React$Component) {
       value: function componentDidMount() {
         var _this = this;
 
-        this.drawPanel();
         window.addEventListener("resize", function (event) {
-          _this.drawPanel();
+          _this.drawPanel(true);
         });
       }
     },
     componentDidUpdate: {
       value: function componentDidUpdate() {
-        this.drawPanel();
+        this.drawPanel(false);
       }
     },
     drawPanel: {
-      value: function drawPanel() {
-        if (this.props.initialRates.length == 0) {
+      value: function drawPanel(resize) {
+
+        if (this.props.initialRates.length == 0 || this.state.initial && !resize) {
           return;
         }
 
@@ -124,11 +125,20 @@ var Panel = (function (_React$Component) {
           }
         }).on("mousedown", function () {
           var mouse = d3.mouse(this);
-
-          clearTimeout(addingPointTimeout);
+          if (self.state.addingPoint) {
+            console.log("reset adding point state");
+            self.setState({ addingPoint: false });
+          }
           addingPointTimeout = setTimeout(function () {
-
             self.setState({ addingPoint: { x: mouse[0], y: mouse[1] } });
+
+            var time = x.invert(mouse[0]),
+                rate = y.invert(mouse[1]),
+                index = bisectRate(rates, time);
+
+            rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index));
+            self.redrawRates(ratesGroup, path, x, y, line, playingPoint);
+            console.log(rates);
           }, 2000);
         }).on("mouseover", function () {
           if (self.state.adjustPoints == ADDING_POINT) {
@@ -177,6 +187,8 @@ var Panel = (function (_React$Component) {
           focusPoint = null;
           clearTimeout(addingPointTimeout);
         });
+
+        this.setState({ initial: true });
       }
     },
     addPoint: {
@@ -250,12 +262,6 @@ var Panel = (function (_React$Component) {
     },
     render: {
       value: function render() {
-        var tooltipStyle = {
-          opacity: this.state.addingPoint ? 1 : 0,
-          top: this.state.addingPoint.y,
-          left: this.state.addingPoint.x
-        };
-
         return React.createElement(
           "div",
           { className: "row" },
@@ -267,7 +273,9 @@ var Panel = (function (_React$Component) {
               { className: "slowfast-panel" },
               React.createElement("svg", { className: "graph", ref: "panel" })
             ),
-            React.createElement(Tooltip, { ref: "addPointTooltip", style: tooltipStyle, message: "Add Point" })
+            React.createElement(Tooltip, { ref: "addPointTooltip",
+              position: this.state.addingPoint,
+              message: "Add Point" })
           )
         );
       }
@@ -306,9 +314,21 @@ var Tooltip = (function (_React$Component) {
   _createClass(Tooltip, {
     render: {
       value: function render() {
+        var style = this.props.style || {};
+
+        if (this.props.position && this.refs.tooltip) {
+          var tooltip = this.refs.tooltip.getDOMNode();
+          console.log(tooltip.clientWidth, tooltip.clientHeight);
+          console.log(tooltip);
+
+          style.opacity = 1;
+          style.left = this.props.position.x - tooltip.clientWidth / 2;
+          style.top = this.props.position.y - tooltip.clientHeight / 2;
+        }
+
         return React.createElement(
           "div",
-          { className: "tooltip top", style: this.props.style },
+          { className: "tooltip top", ref: "tooltip", style: style },
           React.createElement("div", { className: "tooltip-arrow" }),
           React.createElement(
             "div",

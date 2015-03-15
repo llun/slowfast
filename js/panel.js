@@ -18,26 +18,27 @@ let rates = []
   , markerPointSize = 8
   , slowfast = null
   , addingPointTimeout = null
+  , initial = false
 
 export default class Panel extends React.Component {
   constructor(props) {
     super(props)
-    this.state = { adjustPoints: false, addingPoint: false }
+    this.state = { adjustPoints: false, addingPoint: false, initial: false }
   }
 
   componentDidMount() {
-    this.drawPanel()
     window.addEventListener('resize', event => {
-      this.drawPanel()
+      this.drawPanel(true)
     })
   }
 
   componentDidUpdate() {
-    this.drawPanel()
+    this.drawPanel(false)
   }
 
-  drawPanel() {
-    if (this.props.initialRates.length == 0) {
+  drawPanel(resize) {
+
+    if (this.props.initialRates.length == 0 || (this.state.initial && !resize)) {
       return
     }
 
@@ -87,15 +88,24 @@ export default class Panel extends React.Component {
           self.redrawRates(ratesGroup, path, x, y, line, playingPoint)
           self.setState({ adjustPoints: false })
         }
+
       })
       .on('mousedown', function() {
         let mouse = d3.mouse(this)
-
-        clearTimeout(addingPointTimeout)
+        if (self.state.addingPoint) {
+          console.log ('reset adding point state')
+          self.setState({ addingPoint: false })
+        }
         addingPointTimeout = setTimeout(() => {
-
-
           self.setState({ addingPoint: { x: mouse[0], y: mouse[1] } })
+
+          let time = x.invert(mouse[0])
+            , rate = y.invert(mouse[1])
+            , index = bisectRate(rates, time)
+
+          rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index))
+          self.redrawRates(ratesGroup, path, x, y, line, playingPoint)
+          console.log (rates)
         }, 2000)
       })
       .on('mouseover', function() {
@@ -147,7 +157,9 @@ export default class Panel extends React.Component {
       .on('mouseup', () => {
         focusPoint = null
         clearTimeout(addingPointTimeout)
-      })    
+      })
+
+    this.setState({ initial: true })
   }
 
   addPoint() {
@@ -223,12 +235,6 @@ export default class Panel extends React.Component {
   }
 
   render() {
-    let tooltipStyle = {
-      opacity: this.state.addingPoint ? 1 : 0,
-      top: this.state.addingPoint.y,
-      left: this.state.addingPoint.x
-    }
-
     return (
       <div className="row">
         <div className="col-xs-12">
@@ -237,7 +243,9 @@ export default class Panel extends React.Component {
             <svg className="graph" ref="panel"></svg>
           </div>
 
-          <Tooltip ref="addPointTooltip" style={tooltipStyle} message="Add Point" />
+          <Tooltip ref="addPointTooltip" 
+            position={this.state.addingPoint}
+            message="Add Point" />
           
         </div>
       </div>
