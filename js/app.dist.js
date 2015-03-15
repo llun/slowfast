@@ -83,7 +83,7 @@ var Panel = (function (_React$Component) {
         }),
             self = this;
 
-        rates = this.props.initialRates;
+        rates = rates.length > 0 ? rates : this.props.initialRates;
 
         var panel = d3.select(this.refs.panel.getDOMNode());
         panel.selectAll("*").remove();

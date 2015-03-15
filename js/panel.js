@@ -49,7 +49,7 @@ export default class Panel extends React.Component {
       , line = d3.svg.line().interpolate('monotone').x(rate => { return x(rate.time) }).y(rate => { return y(rate.rate) })
       , self = this
 
-    rates = this.props.initialRates
+    rates = (rates.length > 0 ? rates : this.props.initialRates)
 
     let panel = d3.select(this.refs.panel.getDOMNode())
     panel.selectAll("*").remove()
