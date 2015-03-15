@@ -126,17 +126,21 @@ var Panel = (function (_React$Component) {
         }).on("mousedown", function () {
           var mouse = d3.mouse(this);
           if (self.state.addingPoint) {
+            var index = self.state.addingPoint.index;
+            rates = rates.slice(0, index).concat(rates.slice(index + 1));
+            self.redrawRates(ratesGroup, path, x, y, line, playingPoint);
+
             self.setState({ addingPoint: false });
           }
           addingPointTimeout = setTimeout(function () {
-            self.setState({ addingPoint: { x: mouse[0], y: mouse[1] } });
-
             var time = x.invert(mouse[0]),
                 rate = y.invert(mouse[1]),
                 index = bisectRate(rates, time);
 
             rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index));
             self.redrawRates(ratesGroup, path, x, y, line, playingPoint);
+
+            self.setState({ addingPoint: { x: mouse[0], y: mouse[1], index: index } });
           }, 2000);
         }).on("mouseover", function () {
           if (self.state.adjustPoints == ADDING_POINT) {
@@ -318,10 +322,8 @@ var Tooltip = (function (_React$Component) {
           style.opacity = 1;
           style.left = props.position.x - tooltip.clientWidth / 2 + (props.offset.left || 0);
           style.top = props.position.y - tooltip.clientHeight + (props.offset.top || 0);
-          style.display = "block";
         } else {
           style.opacity = 0;
-          style.display = "none";
         }
       }
     },

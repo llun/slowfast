@@ -93,17 +93,21 @@ export default class Panel extends React.Component {
       .on('mousedown', function() {
         let mouse = d3.mouse(this)
         if (self.state.addingPoint) {
+          let index = self.state.addingPoint.index
+          rates = rates.slice(0, index).concat(rates.slice(index + 1))
+          self.redrawRates(ratesGroup, path, x, y, line, playingPoint)
+
           self.setState({ addingPoint: false })
         }
         addingPointTimeout = setTimeout(() => {
-          self.setState({ addingPoint: { x: mouse[0], y: mouse[1] } })
-
           let time = x.invert(mouse[0])
             , rate = y.invert(mouse[1])
             , index = bisectRate(rates, time)
 
           rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index))
           self.redrawRates(ratesGroup, path, x, y, line, playingPoint)
+
+          self.setState({ addingPoint: { x: mouse[0], y: mouse[1], index: index } })
         }, 2000)
       })
       .on('mouseover', function() {
