@@ -91,9 +91,9 @@ export default class Panel extends React.Component {
 
       })
       .on('mousedown', function() {
+        console.log (arguments)
         let mouse = d3.mouse(this)
         if (self.state.addingPoint) {
-          console.log ('reset adding point state')
           self.setState({ addingPoint: false })
         }
         addingPointTimeout = setTimeout(() => {
@@ -105,7 +105,6 @@ export default class Panel extends React.Component {
 
           rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index))
           self.redrawRates(ratesGroup, path, x, y, line, playingPoint)
-          console.log (rates)
         }, 2000)
       })
       .on('mouseover', function() {

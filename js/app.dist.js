@@ -124,9 +124,9 @@ var Panel = (function (_React$Component) {
             self.setState({ adjustPoints: false });
           }
         }).on("mousedown", function () {
+          console.log(arguments);
           var mouse = d3.mouse(this);
           if (self.state.addingPoint) {
-            console.log("reset adding point state");
             self.setState({ addingPoint: false });
           }
           addingPointTimeout = setTimeout(function () {
@@ -138,7 +138,6 @@ var Panel = (function (_React$Component) {
 
             rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index));
             self.redrawRates(ratesGroup, path, x, y, line, playingPoint);
-            console.log(rates);
           }, 2000);
         }).on("mouseover", function () {
           if (self.state.adjustPoints == ADDING_POINT) {
@@ -294,6 +293,8 @@ var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["defau
 
 var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
@@ -301,34 +302,31 @@ var _classCallCheck = function (instance, Constructor) { if (!(instance instance
 var React = _interopRequire(require("react/addons"));
 
 var Tooltip = (function (_React$Component) {
-  function Tooltip() {
+  function Tooltip(props) {
     _classCallCheck(this, Tooltip);
 
-    if (_React$Component != null) {
-      _React$Component.apply(this, arguments);
-    }
+    _get(Object.getPrototypeOf(Tooltip.prototype), "constructor", this).call(this, props);
+    this.style = props.style || {};
   }
 
   _inherits(Tooltip, _React$Component);
 
   _createClass(Tooltip, {
+    componentWillReceiveProps: {
+      value: function componentWillReceiveProps(props) {
+        if (props.position && this.refs.tooltip) {
+          var tooltip = this.refs.tooltip.getDOMNode();
+          this.style.opacity = 1;
+          this.style.left = props.position.x - tooltip.clientWidth / 2;
+          this.style.top = props.position.y - tooltip.clientHeight / 2;
+        }
+      }
+    },
     render: {
       value: function render() {
-        var style = this.props.style || {};
-
-        if (this.props.position && this.refs.tooltip) {
-          var tooltip = this.refs.tooltip.getDOMNode();
-          console.log(tooltip.clientWidth, tooltip.clientHeight);
-          console.log(tooltip);
-
-          style.opacity = 1;
-          style.left = this.props.position.x - tooltip.clientWidth / 2;
-          style.top = this.props.position.y - tooltip.clientHeight / 2;
-        }
-
         return React.createElement(
           "div",
-          { className: "tooltip top", ref: "tooltip", style: style },
+          { className: "tooltip top", ref: "tooltip", style: this.style },
           React.createElement("div", { className: "tooltip-arrow" }),
           React.createElement(
             "div",
@@ -345,7 +343,37 @@ var Tooltip = (function (_React$Component) {
 
 module.exports = Tooltip;
 
-},{"react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js"}],"/Users/llun/Documents/slowfast/node_modules/d3/d3.js":[function(require,module,exports){
+},{"react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js"}],"/Users/llun/Documents/slowfast/node_modules/classnames/index.js":[function(require,module,exports){
+function classNames() {
+	var args = arguments;
+	var classes = [];
+
+	for (var i = 0; i < args.length; i++) {
+		var arg = args[i];
+		if (!arg) {
+			continue;
+		}
+
+		if ('string' === typeof arg || 'number' === typeof arg) {
+			classes.push(arg);
+		} else if ('object' === typeof arg) {
+			for (var key in arg) {
+				if (!arg.hasOwnProperty(key) || !arg[key]) {
+					continue;
+				}
+				classes.push(key);
+			}
+		}
+	}
+	return classes.join(' ');
+}
+
+// safely export classNames in case the script is included directly on a page
+if (typeof module !== 'undefined' && module.exports) {
+	module.exports = classNames;
+}
+
+},{}],"/Users/llun/Documents/slowfast/node_modules/d3/d3.js":[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.5"
@@ -32050,6 +32078,8 @@ var React = _interopRequire(require("react/addons"));
 
 var wg_fetch = _interopRequire(require("whatwg-fetch"));
 
+var classnames = _interopRequire(require("classnames"));
+
 var Panel = _interopRequire(require("./panel"));
 
 var App = (function (_React$Component) {
@@ -32142,11 +32172,6 @@ var App = (function (_React$Component) {
     },
     render: {
       value: function render() {
-        var videoClassNames = React.addons.classSet({
-          video: true,
-          playing: this.state.playing
-        });
-
         return React.createElement(
           "div",
           { className: "app" },
@@ -32158,7 +32183,7 @@ var App = (function (_React$Component) {
               { className: "col-xs-12 player" },
               React.createElement(
                 "div",
-                { className: videoClassNames },
+                { className: classnames("video", { playing: this.state.playing }) },
                 React.createElement("video", { ref: "video" }),
                 React.createElement(
                   "div",
@@ -32181,4 +32206,4 @@ var App = (function (_React$Component) {
 
 React.render(React.createElement(App, null), document.querySelector("main"));
 
-},{"./panel":"/Users/llun/Documents/slowfast/js/panel.js","react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js","whatwg-fetch":"/Users/llun/Documents/slowfast/node_modules/whatwg-fetch/fetch.js"}]},{},["/Users/llun/Documents/slowfast"]);
+},{"./panel":"/Users/llun/Documents/slowfast/js/panel.js","classnames":"/Users/llun/Documents/slowfast/node_modules/classnames/index.js","react/addons":"/Users/llun/Documents/slowfast/node_modules/react/addons.js","whatwg-fetch":"/Users/llun/Documents/slowfast/node_modules/whatwg-fetch/fetch.js"}]},{},["/Users/llun/Documents/slowfast"]);

@@ -1,5 +1,6 @@
 import React from 'react/addons'
 import wg_fetch from 'whatwg-fetch'
+import classnames from 'classnames'
 
 import Panel from './panel'
 
@@ -81,17 +82,12 @@ class App extends React.Component {
   }
 
   render() {
-    let videoClassNames = React.addons.classSet({
-      video: true,
-      playing: this.state.playing
-    })
-
     return (
       <div className="app">
 
         <div className="row">
           <div className="col-xs-12 player">
-            <div className={videoClassNames}>
+            <div className={classnames('video', { playing: this.state.playing })}>
               <video ref="video" />
               <div className="control">
                 <i className="fa fa-play play" onClick={this.play}></i>
