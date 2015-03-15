@@ -91,7 +91,6 @@ export default class Panel extends React.Component {
 
       })
       .on('mousedown', function() {
-        console.log (arguments)
         let mouse = d3.mouse(this)
         if (self.state.addingPoint) {
           self.setState({ addingPoint: false })
@@ -161,13 +160,8 @@ export default class Panel extends React.Component {
     this.setState({ initial: true })
   }
 
-  addPoint() {
-    slowfast.pause()
-
-    if (this.state.adjustPoints == ADDING_POINT) {
-      return this.setState({ adjustPoints: false })
-    }
-    this.setState({ adjustPoints: ADDING_POINT })
+  confirmAction() {
+    this.setState({ addingPoint: false })
   }
 
   removePoint() {
@@ -189,7 +183,7 @@ export default class Panel extends React.Component {
           .attr('cx', rate => { return x(rate.time) })
           .attr('cy', rate => { return y(rate.rate) })
           .attr('r',  markerPointSize)
-          .attr('fill', 'black')
+          .attr('fill', 'white')
           .attr('stroke', 'black')
           .attr('stroke-width', pointStrokeSize)
           .on('mousedown', function() {
@@ -246,7 +240,8 @@ export default class Panel extends React.Component {
             <Tooltip ref="addPointTooltip" 
               position={this.state.addingPoint}
               offset={tooltipOffset}
-              message="Add Point" />
+              message="Add Point"
+              onClick={this.confirmAction.bind(this)} />
           </div>
           
         </div>

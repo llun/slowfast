@@ -8,17 +8,22 @@ export default class Tooltip extends React.Component {
   }
 
   componentWillReceiveProps(props) {
+    let style = this.style
     if (props.position && this.refs.tooltip) {
       let tooltip = this.refs.tooltip.getDOMNode()
-      this.style.opacity = 1
-      this.style.left = props.position.x - tooltip.clientWidth / 2 + (props.offset.left || 0)
-      this.style.top = props.position.y - tooltip.clientHeight + (props.offset.top || 0)
-    }    
+      style.opacity = 1
+      style.left = props.position.x - tooltip.clientWidth / 2 + (props.offset.left || 0)
+      style.top = props.position.y - tooltip.clientHeight + (props.offset.top || 0)
+      style.display = 'block'
+    } else {
+      style.opacity = 0
+      style.display = 'none'
+    }
   }
 
   render() {
     return (
-      <div className="tooltip top" ref="tooltip" style={this.style}>
+      <div className="tooltip top" ref="tooltip" style={this.style} onClick={this.props.onClick}>
         <div className="tooltip-arrow"></div>
         <div className="tooltip-inner">
           {this.props.message}

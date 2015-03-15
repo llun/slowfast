@@ -124,7 +124,6 @@ var Panel = (function (_React$Component) {
             self.setState({ adjustPoints: false });
           }
         }).on("mousedown", function () {
-          console.log(arguments);
           var mouse = d3.mouse(this);
           if (self.state.addingPoint) {
             self.setState({ addingPoint: false });
@@ -190,14 +189,9 @@ var Panel = (function (_React$Component) {
         this.setState({ initial: true });
       }
     },
-    addPoint: {
-      value: function addPoint() {
-        slowfast.pause();
-
-        if (this.state.adjustPoints == ADDING_POINT) {
-          return this.setState({ adjustPoints: false });
-        }
-        this.setState({ adjustPoints: ADDING_POINT });
+    confirmAction: {
+      value: function confirmAction() {
+        this.setState({ addingPoint: false });
       }
     },
     removePoint: {
@@ -218,7 +212,7 @@ var Panel = (function (_React$Component) {
           return x(rate.time);
         }).attr("cy", function (rate) {
           return y(rate.rate);
-        }).attr("r", markerPointSize).attr("fill", "black").attr("stroke", "black").attr("stroke-width", pointStrokeSize).on("mousedown", function () {
+        }).attr("r", markerPointSize).attr("fill", "white").attr("stroke", "black").attr("stroke-width", pointStrokeSize).on("mousedown", function () {
           focusPoint = d3.select(this);
         }).on("click", function () {
           if (self.state.adjustPoints == REMOVING_POINT) {
@@ -276,7 +270,8 @@ var Panel = (function (_React$Component) {
               React.createElement(Tooltip, { ref: "addPointTooltip",
                 position: this.state.addingPoint,
                 offset: tooltipOffset,
-                message: "Add Point" })
+                message: "Add Point",
+                onClick: this.confirmAction.bind(this) })
             )
           )
         );
@@ -317,11 +312,16 @@ var Tooltip = (function (_React$Component) {
   _createClass(Tooltip, {
     componentWillReceiveProps: {
       value: function componentWillReceiveProps(props) {
+        var style = this.style;
         if (props.position && this.refs.tooltip) {
           var tooltip = this.refs.tooltip.getDOMNode();
-          this.style.opacity = 1;
-          this.style.left = props.position.x - tooltip.clientWidth / 2 + (props.offset.left || 0);
-          this.style.top = props.position.y - tooltip.clientHeight + (props.offset.top || 0);
+          style.opacity = 1;
+          style.left = props.position.x - tooltip.clientWidth / 2 + (props.offset.left || 0);
+          style.top = props.position.y - tooltip.clientHeight + (props.offset.top || 0);
+          style.display = "block";
+        } else {
+          style.opacity = 0;
+          style.display = "none";
         }
       }
     },
@@ -329,7 +329,7 @@ var Tooltip = (function (_React$Component) {
       value: function render() {
         return React.createElement(
           "div",
-          { className: "tooltip top", ref: "tooltip", style: this.style },
+          { className: "tooltip top", ref: "tooltip", style: this.style, onClick: this.props.onClick },
           React.createElement("div", { className: "tooltip-arrow" }),
           React.createElement(
             "div",
