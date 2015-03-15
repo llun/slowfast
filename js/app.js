@@ -95,10 +95,10 @@ class App extends React.Component {
             <div className={classnames('video', { playing: this.state.playing })}>
               <video ref="video" />
               <div className="control">
-                <i className="fa fa-play play" onClick={this.play}></i>
+                <i className="fa fa-play play" onClick={this.play.bind(this)}></i>
                 
-                <i className="fa fa-step-backward begin" onClick={this.begin}></i>
-                <i className="fa fa-pause pause" onClick={this.pause}></i>
+                <i className="fa fa-step-backward begin" onClick={this.begin.bind(this)}></i>
+                <i className="fa fa-pause pause" onClick={this.pause.bind(this)}></i>
               </div>
             </div>
           </div>

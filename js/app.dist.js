@@ -32195,9 +32195,9 @@ var App = (function (_React$Component) {
                 React.createElement(
                   "div",
                   { className: "control" },
-                  React.createElement("i", { className: "fa fa-play play", onClick: this.play }),
-                  React.createElement("i", { className: "fa fa-step-backward begin", onClick: this.begin }),
-                  React.createElement("i", { className: "fa fa-pause pause", onClick: this.pause })
+                  React.createElement("i", { className: "fa fa-play play", onClick: this.play.bind(this) }),
+                  React.createElement("i", { className: "fa fa-step-backward begin", onClick: this.begin.bind(this) }),
+                  React.createElement("i", { className: "fa fa-pause pause", onClick: this.pause.bind(this) })
                 )
               )
             )
