@@ -11,8 +11,8 @@ export default class Tooltip extends React.Component {
     if (props.position && this.refs.tooltip) {
       let tooltip = this.refs.tooltip.getDOMNode()
       this.style.opacity = 1
-      this.style.left = props.position.x - tooltip.clientWidth / 2
-      this.style.top = props.position.y - tooltip.clientHeight / 2
+      this.style.left = props.position.x - tooltip.clientWidth / 2 + (props.offset.left || 0)
+      this.style.top = props.position.y - tooltip.clientHeight + (props.offset.top || 0)
     }    
   }
 

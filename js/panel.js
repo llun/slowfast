@@ -234,17 +234,20 @@ export default class Panel extends React.Component {
   }
 
   render() {
+    let tooltipOffset = { top: -((markerPointSize / 2) + 2)}
+
     return (
       <div className="row">
         <div className="col-xs-12">
         
           <div className="slowfast-panel">
             <svg className="graph" ref="panel"></svg>
-          </div>
 
-          <Tooltip ref="addPointTooltip" 
-            position={this.state.addingPoint}
-            message="Add Point" />
+            <Tooltip ref="addPointTooltip" 
+              position={this.state.addingPoint}
+              offset={tooltipOffset}
+              message="Add Point" />
+          </div>
           
         </div>
       </div>

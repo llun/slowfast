@@ -261,6 +261,8 @@ var Panel = (function (_React$Component) {
     },
     render: {
       value: function render() {
+        var tooltipOffset = { top: -(markerPointSize / 2 + 2) };
+
         return React.createElement(
           "div",
           { className: "row" },
@@ -270,11 +272,12 @@ var Panel = (function (_React$Component) {
             React.createElement(
               "div",
               { className: "slowfast-panel" },
-              React.createElement("svg", { className: "graph", ref: "panel" })
-            ),
-            React.createElement(Tooltip, { ref: "addPointTooltip",
-              position: this.state.addingPoint,
-              message: "Add Point" })
+              React.createElement("svg", { className: "graph", ref: "panel" }),
+              React.createElement(Tooltip, { ref: "addPointTooltip",
+                position: this.state.addingPoint,
+                offset: tooltipOffset,
+                message: "Add Point" })
+            )
           )
         );
       }
@@ -317,8 +320,8 @@ var Tooltip = (function (_React$Component) {
         if (props.position && this.refs.tooltip) {
           var tooltip = this.refs.tooltip.getDOMNode();
           this.style.opacity = 1;
-          this.style.left = props.position.x - tooltip.clientWidth / 2;
-          this.style.top = props.position.y - tooltip.clientHeight / 2;
+          this.style.left = props.position.x - tooltip.clientWidth / 2 + (props.offset.left || 0);
+          this.style.top = props.position.y - tooltip.clientHeight + (props.offset.top || 0);
         }
       }
     },
