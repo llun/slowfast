@@ -37,7 +37,7 @@ var rates = [],
     playingPointSize = 10,
     markerPointSize = 8,
     slowfast = null,
-    addingPointTimeout = null,
+    actionTimeout = null,
     initial = false;
 
 var Panel = (function (_React$Component) {
@@ -45,7 +45,7 @@ var Panel = (function (_React$Component) {
     _classCallCheck(this, Panel);
 
     _get(Object.getPrototypeOf(Panel.prototype), "constructor", this).call(this, props);
-    this.state = { adjustPoints: false, addingPoint: false, initial: false };
+    this.state = { adjustPoints: false, add: false, remove: false, initial: false };
   }
 
   _inherits(Panel, _React$Component);
@@ -125,22 +125,23 @@ var Panel = (function (_React$Component) {
           }
         }).on("mousedown", function () {
           var mouse = d3.mouse(this);
-          if (self.state.addingPoint) {
-            var index = self.state.addingPoint.index;
+          if (self.state.add) {
+            var index = self.state.add.index;
             rates = rates.slice(0, index).concat(rates.slice(index + 1));
             self.redrawRates(ratesGroup, path, x, y, line, playingPoint);
 
-            self.setState({ addingPoint: false });
+            self.setState({ add: false });
           }
-          addingPointTimeout = setTimeout(function () {
+          actionTimeout = setTimeout(function () {
             var time = x.invert(mouse[0]),
                 rate = y.invert(mouse[1]),
                 index = bisectRate(rates, time);
 
+            slowfast.pause();
             rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index));
             self.redrawRates(ratesGroup, path, x, y, line, playingPoint);
 
-            self.setState({ addingPoint: { x: mouse[0], y: mouse[1], index: index } });
+            self.setState({ add: { x: mouse[0], y: mouse[1], index: index } });
           }, 2000);
         }).on("mouseover", function () {
           if (self.state.adjustPoints == ADDING_POINT) {
@@ -187,7 +188,7 @@ var Panel = (function (_React$Component) {
           self.updatePath(path, x, y, line, playingPoint);
         }).on("mouseup", function () {
           focusPoint = null;
-          clearTimeout(addingPointTimeout);
+          clearTimeout(actionTimeout);
         });
 
         this.setState({ initial: true });
@@ -195,17 +196,7 @@ var Panel = (function (_React$Component) {
     },
     confirmAction: {
       value: function confirmAction() {
-        this.setState({ addingPoint: false });
-      }
-    },
-    removePoint: {
-      value: function removePoint() {
-        slowfast.pause();
-
-        if (this.state.adjustPoints == REMOVING_POINT) {
-          return this.setState({ adjustPoints: false });
-        }
-        this.setState({ adjustPoints: REMOVING_POINT });
+        this.setState({ add: false });
       }
     },
     redrawRates: {
@@ -271,10 +262,15 @@ var Panel = (function (_React$Component) {
               "div",
               { className: "slowfast-panel" },
               React.createElement("svg", { className: "graph", ref: "panel" }),
-              React.createElement(Tooltip, { ref: "addPointTooltip",
-                position: this.state.addingPoint,
+              React.createElement(Tooltip, {
+                position: this.state.add,
                 offset: tooltipOffset,
                 message: "Add Point",
+                onClick: this.confirmAction.bind(this) }),
+              React.createElement(Tooltip, {
+                position: this.state.remove,
+                offset: tooltipOffset,
+                message: "Remove Point",
                 onClick: this.confirmAction.bind(this) })
             )
           )

@@ -17,13 +17,13 @@ let rates = []
   , playingPointSize = 10
   , markerPointSize = 8
   , slowfast = null
-  , addingPointTimeout = null
+  , actionTimeout = null
   , initial = false
 
 export default class Panel extends React.Component {
   constructor(props) {
     super(props)
-    this.state = { adjustPoints: false, addingPoint: false, initial: false }
+    this.state = { adjustPoints: false, add: false, remove: false, initial: false }
   }
 
   componentDidMount() {
@@ -92,22 +92,23 @@ export default class Panel extends React.Component {
       })
       .on('mousedown', function() {
         let mouse = d3.mouse(this)
-        if (self.state.addingPoint) {
-          let index = self.state.addingPoint.index
+        if (self.state.add) {
+          let index = self.state.add.index
           rates = rates.slice(0, index).concat(rates.slice(index + 1))
           self.redrawRates(ratesGroup, path, x, y, line, playingPoint)
 
-          self.setState({ addingPoint: false })
+          self.setState({ add: false })
         }
-        addingPointTimeout = setTimeout(() => {
+        actionTimeout = setTimeout(() => {
           let time = x.invert(mouse[0])
             , rate = y.invert(mouse[1])
             , index = bisectRate(rates, time)
 
+          slowfast.pause()
           rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index))
           self.redrawRates(ratesGroup, path, x, y, line, playingPoint)
 
-          self.setState({ addingPoint: { x: mouse[0], y: mouse[1], index: index } })
+          self.setState({ add: { x: mouse[0], y: mouse[1], index: index } })
         }, 2000)
       })
       .on('mouseover', function() {
@@ -158,23 +159,14 @@ export default class Panel extends React.Component {
       })
       .on('mouseup', () => {
         focusPoint = null
-        clearTimeout(addingPointTimeout)
+        clearTimeout(actionTimeout)
       })
 
     this.setState({ initial: true })
   }
 
   confirmAction() {
-    this.setState({ addingPoint: false })
-  }
-
-  removePoint() {
-    slowfast.pause()
-
-    if (this.state.adjustPoints == REMOVING_POINT) {
-      return this.setState({ adjustPoints: false })
-    }
-    this.setState({ adjustPoints: REMOVING_POINT })
+    this.setState({ add: false })
   }
 
   redrawRates(group, path, x, y, line, playingPoint) {
@@ -241,10 +233,16 @@ export default class Panel extends React.Component {
           <div className="slowfast-panel">
             <svg className="graph" ref="panel"></svg>
 
-            <Tooltip ref="addPointTooltip" 
-              position={this.state.addingPoint}
+            <Tooltip
+              position={this.state.add}
               offset={tooltipOffset}
               message="Add Point"
+              onClick={this.confirmAction.bind(this)} />
+
+            <Tooltip
+              position={this.state.remove}
+              offset={tooltipOffset}
+              message="Remove Point"
               onClick={this.confirmAction.bind(this)} />
           </div>
           
