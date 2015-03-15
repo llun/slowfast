@@ -86,7 +86,9 @@ var Panel = (function (_React$Component) {
 
         var panel = d3.select(this.refs.panel.getDOMNode());
         panel.selectAll("*").remove();
-        panel.attr("preserveAspectRatio", "xMinYMin meet").attr("viewBox", "0 0 " + width + " " + height);
+        panel.attr("preserveAspectRatio", "xMinYMin meet").attr("viewBox", "0 0 " + width + " " + height)
+        // Drawing axis
+        .append("g").attr("class", "axis x").attr("transform", "translate(0," + height + ")").call(d3.svg.axis().scale(x).orient("bottom").tickSize(-height)).append("text").style("text-anchor", "end").text("Time (seconds)").attr("x", width).attr("y", 30);
 
         var path = panel.append("path").attr("stroke", "black").attr("stroke-width", pointStrokeSize).attr("fill", "none"),
             playingPoint = panel.append("circle").attr("cx", x(rates[0].time)).attr("cy", y(rates[0].rate)).attr("r", playingPointSize).attr("fill", "white").attr("stroke", "red").attr("stroke-width", pointStrokeSize),
@@ -109,9 +111,6 @@ var Panel = (function (_React$Component) {
         });
         this.redrawRates(ratesGroup, path, x, y, line, playingPoint);
         this.playingPoint = playingPoint;
-
-        // Drawing axis
-        panel.append("g").attr("class", "axis x").attr("transform", "translate(0," + height + ")").call(d3.svg.axis().scale(x).orient("bottom")).append("text").style("text-anchor", "end").text("Time (seconds)").attr("x", width).attr("y", 30);
 
         // Event Handlers
         panel.on("mousedown", function () {
