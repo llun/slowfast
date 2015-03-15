@@ -73,6 +73,19 @@ export default class Panel extends React.Component {
     this.redrawRates(ratesGroup, path, x, y, line, playingPoint)
     this.playingPoint = playingPoint
 
+    // Drawing axis
+    panel
+      .append('g')
+      .attr('class', 'axis x')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.svg.axis().scale(x).orient('bottom'))
+      .append('text')
+        .style("text-anchor", "end")
+        .text('Time (seconds)')
+        .attr('x', width)
+        .attr('y', 30)
+
+    // Event Handlers
     panel
       .on('mousedown', function() {
         let mouse = d3.mouse(this)
@@ -211,9 +224,12 @@ export default class Panel extends React.Component {
 
   render() {
     let tooltipOffset = { top: -((markerPointSize / 2) + 2)}
+      , panelStyle = {
+        display: this.props.show ? 'block' : 'none'
+      }
 
     return (
-      <div className="row">
+      <div className="row" style={panelStyle}>
         <div className="col-xs-12">
         
           <div className="slowfast-panel">

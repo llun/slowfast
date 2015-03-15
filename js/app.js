@@ -99,7 +99,11 @@ class App extends React.Component {
           </div>
         </div>
 
-        <Panel video={this.state.video} initialRates={this.state.rates} videoID={this.state.videoID} />
+        <Panel 
+          show={!this.state.loading}
+          video={this.state.video} 
+          initialRates={this.state.rates} 
+          videoID={this.state.videoID} />
       </div>
       )
   }

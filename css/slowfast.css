@@ -4,8 +4,9 @@ header .fast {
 }
 
 footer {
+  margin-top: 40px;
   font-size: 12px;
-  font-weight: bold;
+  border-top: 1px solid black;
 }
 
 .player {
@@ -92,9 +93,19 @@ footer {
 
 .slowfast-panel .graph {
   overflow: visible;
-  border: 1px solid black;
   box-sizing: content-box;
   width: 100%;
+}
+
+.slowfast-panel .axis text {
+  font-size: 10px;
+}
+
+.slowfast-panel .axis path,
+.slowfast-panel .axis line {
+  fill: none;
+  stroke: black;
+  sharp-rendering: crispEdges;
 }
 
 .slowfast-panel .actions-overlay {
