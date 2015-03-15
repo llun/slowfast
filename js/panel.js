@@ -76,6 +76,8 @@ export default class Panel extends React.Component {
     panel
       .on('mousedown', function() {
         let mouse = d3.mouse(this)
+        
+        // Cancel add
         if (self.state.add) {
           let index = self.state.add.index
           rates = rates.slice(0, index).concat(rates.slice(index + 1))
@@ -83,6 +85,12 @@ export default class Panel extends React.Component {
 
           self.setState({ add: false })
         }
+
+        // Cancel remove
+        if (self.state.remove) {
+          self.setState({ remove: false })
+        }
+
         actionTimeout = setTimeout(() => {
           let time = x.invert(mouse[0])
             , rate = y.invert(mouse[1])
@@ -132,8 +140,17 @@ export default class Panel extends React.Component {
     this.setState({ initial: true })
   }
 
-  confirmAction() {
+  confirmAdd() {
     this.setState({ add: false })
+  }
+
+  confirmRemove() {
+    let index = this.state.remove.index
+
+    rates = rates.slice(0, index).concat(rates.slice(index + 1))
+    this.redrawRates(...this.state.remove.arguments)
+
+    this.setState({ remove: false })
   }
 
   redrawRates(group, path, x, y, line, playingPoint) {
@@ -153,14 +170,16 @@ export default class Panel extends React.Component {
             focusPoint = d3.select(this)
           })
           .on('click', function() {
-            if (self.state.adjustPoints == REMOVING_POINT) {
+            if (rates.length > 2) {
+
               let point = d3.select(this).datum()
               let index = rates.indexOf(point)
-              if (index == 0 || index == rates.length - 1)  return
 
-              rates = rates.slice(0, index).concat(rates.slice(index + 1))
-              self.redrawRates(group, path, x, y, line, playingPoint)
+              self.setState({ remove: { 
+                x: x(point.time), y: y(point.rate), index: index, 
+                arguments: [group, path, x, y, line, playingPoint]} })
             }
+
           })
     this.updatePath(path, x, y, line, playingPoint)
   }
@@ -204,13 +223,13 @@ export default class Panel extends React.Component {
               position={this.state.add}
               offset={tooltipOffset}
               message="Add Point"
-              onClick={this.confirmAction.bind(this)} />
+              onClick={this.confirmAdd.bind(this)} />
 
             <Tooltip
               position={this.state.remove}
               offset={tooltipOffset}
               message="Remove Point"
-              onClick={this.confirmAction.bind(this)} />
+              onClick={this.confirmRemove.bind(this)} />
           </div>
           
         </div>

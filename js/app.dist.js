@@ -3,6 +3,8 @@
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
+var _toConsumableArray = function (arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } };
+
 var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
@@ -110,6 +112,8 @@ var Panel = (function (_React$Component) {
 
         panel.on("mousedown", function () {
           var mouse = d3.mouse(this);
+
+          // Cancel add
           if (self.state.add) {
             var index = self.state.add.index;
             rates = rates.slice(0, index).concat(rates.slice(index + 1));
@@ -117,6 +121,12 @@ var Panel = (function (_React$Component) {
 
             self.setState({ add: false });
           }
+
+          // Cancel remove
+          if (self.state.remove) {
+            self.setState({ remove: false });
+          }
+
           actionTimeout = setTimeout(function () {
             var time = x.invert(mouse[0]),
                 rate = y.invert(mouse[1]),
@@ -164,9 +174,21 @@ var Panel = (function (_React$Component) {
         this.setState({ initial: true });
       }
     },
-    confirmAction: {
-      value: function confirmAction() {
+    confirmAdd: {
+      value: function confirmAdd() {
         this.setState({ add: false });
+      }
+    },
+    confirmRemove: {
+      value: function confirmRemove() {
+        var _ref;
+
+        var index = this.state.remove.index;
+
+        rates = rates.slice(0, index).concat(rates.slice(index + 1));
+        (_ref = this).redrawRates.apply(_ref, _toConsumableArray(this.state.remove.arguments));
+
+        this.setState({ remove: false });
       }
     },
     redrawRates: {
@@ -180,13 +202,14 @@ var Panel = (function (_React$Component) {
         }).attr("r", markerPointSize).attr("fill", "white").attr("stroke", "black").attr("stroke-width", pointStrokeSize).on("mousedown", function () {
           focusPoint = d3.select(this);
         }).on("click", function () {
-          if (self.state.adjustPoints == REMOVING_POINT) {
+          if (rates.length > 2) {
+
             var point = d3.select(this).datum();
             var index = rates.indexOf(point);
-            if (index == 0 || index == rates.length - 1) return;
 
-            rates = rates.slice(0, index).concat(rates.slice(index + 1));
-            self.redrawRates(group, path, x, y, line, playingPoint);
+            self.setState({ remove: {
+                x: x(point.time), y: y(point.rate), index: index,
+                arguments: [group, path, x, y, line, playingPoint] } });
           }
         });
         this.updatePath(path, x, y, line, playingPoint);
@@ -236,12 +259,12 @@ var Panel = (function (_React$Component) {
                 position: this.state.add,
                 offset: tooltipOffset,
                 message: "Add Point",
-                onClick: this.confirmAction.bind(this) }),
+                onClick: this.confirmAdd.bind(this) }),
               React.createElement(Tooltip, {
                 position: this.state.remove,
                 offset: tooltipOffset,
                 message: "Remove Point",
-                onClick: this.confirmAction.bind(this) })
+                onClick: this.confirmRemove.bind(this) })
             )
           )
         );
