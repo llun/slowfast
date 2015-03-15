@@ -64,6 +64,11 @@ export default class Panel extends React.Component {
           .text('Time (seconds)')
           .attr('x', width)
           .attr('y', 30)
+      
+    panel
+      .append('g')
+        .attr('class', 'axis y')
+        .call(d3.svg.axis().scale(y).orient('left').tickSize(-width))
 
     let path = panel.append('path').attr('stroke', 'black').attr('stroke-width', pointStrokeSize).attr('fill', 'none')
       , playingPoint = panel.append('circle').attr('cx', x(rates[0].time)).attr('cy', y(rates[0].rate)).attr('r', playingPointSize).attr('fill', 'white').attr('stroke', 'red').attr('stroke-width', pointStrokeSize)

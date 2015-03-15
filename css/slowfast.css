@@ -99,6 +99,11 @@ footer {
 
 .slowfast-panel .axis text {
   font-size: 10px;
+  font-weight: lighter;
+}
+
+.slowfast-panel .axis.y text {
+  display: none;
 }
 
 .slowfast-panel .axis path,
@@ -106,6 +111,10 @@ footer {
   fill: none;
   stroke: black;
   sharp-rendering: crispEdges;
+}
+
+.slowfast-panel .tick line {
+  stroke: lightgrey;
 }
 
 .slowfast-panel .actions-overlay {
