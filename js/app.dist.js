@@ -19,9 +19,6 @@ var SlowFast = _interopRequire(require("slowfast"));
 
 var Tooltip = _interopRequire(require("./tooltip"));
 
-var ADDING_POINT = "adding",
-    REMOVING_POINT = "removing";
-
 var rates = [],
     bisectRate = d3.bisector(function (datum) {
   return datum.time;
@@ -45,7 +42,7 @@ var Panel = (function (_React$Component) {
     _classCallCheck(this, Panel);
 
     _get(Object.getPrototypeOf(Panel.prototype), "constructor", this).call(this, props);
-    this.state = { adjustPoints: false, add: false, remove: false, initial: false };
+    this.state = { add: false, remove: false, initial: false };
   }
 
   _inherits(Panel, _React$Component);
@@ -111,19 +108,7 @@ var Panel = (function (_React$Component) {
         this.redrawRates(ratesGroup, path, x, y, line, playingPoint);
         this.playingPoint = playingPoint;
 
-        panel.on("click", function () {
-          if (self.state.adjustPoints == ADDING_POINT) {
-            var mouse = d3.mouse(this);
-
-            var time = x.invert(marker.attr("cx"));
-            var rate = y.invert(marker.attr("cy"));
-
-            var index = bisectRate(rates, time);
-            rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index));
-            self.redrawRates(ratesGroup, path, x, y, line, playingPoint);
-            self.setState({ adjustPoints: false });
-          }
-        }).on("mousedown", function () {
+        panel.on("mousedown", function () {
           var mouse = d3.mouse(this);
           if (self.state.add) {
             var index = self.state.add.index;
@@ -143,13 +128,6 @@ var Panel = (function (_React$Component) {
 
             self.setState({ add: { x: mouse[0], y: mouse[1], index: index } });
           }, 2000);
-        }).on("mouseover", function () {
-          if (self.state.adjustPoints == ADDING_POINT) {
-            var mouse = d3.mouse(this);
-            marker.attr("display", "inherit");
-          }
-        }).on("mouseout", function () {
-          marker.attr("display", "none");
         }).on("mousemove", function () {
           var mouse = d3.mouse(this);
 
@@ -157,14 +135,6 @@ var Panel = (function (_React$Component) {
           var newRate = y.invert(mouse[1]);
 
           var index = bisectPath(playingPath, mouse[0], 1);
-
-          if (self.state.adjustPoints == ADDING_POINT) {
-            var point = playingPath[index];
-
-            if (point) {
-              marker.attr("cx", point.x).attr("cy", point.y);
-            }
-          }
 
           if (!focusPoint) return;
 

@@ -4,8 +4,6 @@ import SlowFast from 'slowfast'
 
 import Tooltip from './tooltip'
 
-const ADDING_POINT = 'adding', REMOVING_POINT = 'removing'
-
 let rates = []
   , bisectRate = d3.bisector(datum => { return datum.time }).right
   , bisectPath = d3.bisector(datum => { return datum.x }).right
@@ -23,7 +21,7 @@ let rates = []
 export default class Panel extends React.Component {
   constructor(props) {
     super(props)
-    this.state = { adjustPoints: false, add: false, remove: false, initial: false }
+    this.state = { add: false, remove: false, initial: false }
   }
 
   componentDidMount() {
@@ -76,20 +74,6 @@ export default class Panel extends React.Component {
     this.playingPoint = playingPoint
 
     panel
-      .on('click', function() {
-        if (self.state.adjustPoints == ADDING_POINT) {
-          let mouse = d3.mouse(this)
-
-          let time = x.invert(marker.attr('cx'))
-          let rate = y.invert(marker.attr('cy'))
-
-          let index = bisectRate(rates, time)
-          rates = rates.slice(0, index).concat([{ time: time, rate: rate }]).concat(rates.slice(index))
-          self.redrawRates(ratesGroup, path, x, y, line, playingPoint)
-          self.setState({ adjustPoints: false })
-        }
-
-      })
       .on('mousedown', function() {
         let mouse = d3.mouse(this)
         if (self.state.add) {
@@ -111,15 +95,6 @@ export default class Panel extends React.Component {
           self.setState({ add: { x: mouse[0], y: mouse[1], index: index } })
         }, 2000)
       })
-      .on('mouseover', function() {
-        if (self.state.adjustPoints == ADDING_POINT) {
-          let mouse = d3.mouse(this)
-          marker.attr('display', 'inherit')
-        }
-      })
-      .on('mouseout', function() {
-        marker.attr('display', 'none')
-      })
       .on('mousemove', function() {
         let mouse = d3.mouse(this)
 
@@ -127,14 +102,6 @@ export default class Panel extends React.Component {
         let newRate = y.invert(mouse[1])
 
         let index = bisectPath(playingPath, mouse[0], 1)
-
-        if (self.state.adjustPoints == ADDING_POINT) {
-          let point = playingPath[index]
-
-          if (point) {
-            marker.attr('cx', point.x).attr('cy', point.y)
-          }
-        }
 
         if (!focusPoint) return
 
