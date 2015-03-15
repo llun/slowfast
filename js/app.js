@@ -7,7 +7,7 @@ import Panel from './panel'
 class App extends React.Component {
   constructor(props) {
     super(props)
-    this.state = { loading: true, playing: false, videoID: '', rates: [] }
+    this.state = { loading: true, playing: false, videoID: '', rates: [], info: null }
 
   }
 
@@ -36,7 +36,9 @@ class App extends React.Component {
     let video = this.video()
   
     let idPattern = window.location.search.match(/(video=(\d+))/i)
-    let id = '95251007'
+      , id = '122218691'
+      , self = this
+
     if (idPattern) {
       id = idPattern[2]
     }
@@ -49,6 +51,7 @@ class App extends React.Component {
         video.src = json.request.files.h264.sd.url
         video.poster = json.video.thumbs.base
         video.addEventListener('durationchange', this.handleDuration.bind(this))
+        self.setState({ info: json })
       })
   }
 
@@ -82,6 +85,8 @@ class App extends React.Component {
   }
 
   render() {
+    let info = this.state.info
+
     return (
       <div className="app">
 
@@ -99,6 +104,19 @@ class App extends React.Component {
           </div>
         </div>
 
+        {(() => {
+          if (info) {
+            return (
+              <div className="row info">
+                <div className="col-xs-12">
+                  <h3><a href={info.video.share_url} target="_blank">{info.video.title}</a></h3>
+                  <h4>by {info.video.owner.name}</h4>
+                </div>
+              </div>
+            )
+          }
+        })()}
+        
         <Panel 
           show={!this.state.loading}
           video={this.state.video} 

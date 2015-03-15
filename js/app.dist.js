@@ -32089,7 +32089,7 @@ var App = (function (_React$Component) {
     _classCallCheck(this, App);
 
     _get(Object.getPrototypeOf(App.prototype), "constructor", this).call(this, props);
-    this.state = { loading: true, playing: false, videoID: "", rates: [] };
+    this.state = { loading: true, playing: false, videoID: "", rates: [], info: null };
   }
 
   _inherits(App, _React$Component);
@@ -32126,8 +32126,10 @@ var App = (function (_React$Component) {
 
         var video = this.video();
 
-        var idPattern = window.location.search.match(/(video=(\d+))/i);
-        var id = "95251007";
+        var idPattern = window.location.search.match(/(video=(\d+))/i),
+            id = "122218691",
+            self = this;
+
         if (idPattern) {
           id = idPattern[2];
         }
@@ -32140,6 +32142,7 @@ var App = (function (_React$Component) {
           video.src = json.request.files.h264.sd.url;
           video.poster = json.video.thumbs.base;
           video.addEventListener("durationchange", _this.handleDuration.bind(_this));
+          self.setState({ info: json });
         });
       }
     },
@@ -32174,6 +32177,8 @@ var App = (function (_React$Component) {
     },
     render: {
       value: function render() {
+        var info = this.state.info;
+
         return React.createElement(
           "div",
           { className: "app" },
@@ -32197,6 +32202,33 @@ var App = (function (_React$Component) {
               )
             )
           ),
+          (function () {
+            if (info) {
+              return React.createElement(
+                "div",
+                { className: "row info" },
+                React.createElement(
+                  "div",
+                  { className: "col-xs-12" },
+                  React.createElement(
+                    "h3",
+                    null,
+                    React.createElement(
+                      "a",
+                      { href: info.video.share_url, target: "_blank" },
+                      info.video.title
+                    )
+                  ),
+                  React.createElement(
+                    "h4",
+                    null,
+                    "by ",
+                    info.video.owner.name
+                  )
+                )
+              );
+            }
+          })(),
           React.createElement(Panel, {
             show: !this.state.loading,
             video: this.state.video,
