@@ -32124,11 +32124,14 @@ var App = (function (_React$Component) {
       value: function componentDidMount() {
         var _this = this;
 
-        var video = this.video();
-
-        var idPattern = window.location.search.match(/(video=(\d+))/i),
+        var video = this.video(),
+            idPattern = window.location.search.match(/(video=(\d+))/i),
             id = "122218691",
             self = this;
+
+        video.addEventListener("pause", function (e) {
+          self.setState({ playing: false });
+        });
 
         if (idPattern) {
           id = idPattern[2];

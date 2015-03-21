@@ -29,15 +29,19 @@ class App extends React.Component {
 
   begin(e) {
     this.pause()
-    this.video().currentTime = 0;
+    this.video().currentTime = 0
   }
 
   componentDidMount() {
     let video = this.video()
-  
-    let idPattern = window.location.search.match(/(video=(\d+))/i)
+      , idPattern = window.location.search.match(/(video=(\d+))/i)
       , id = '122218691'
       , self = this
+
+
+    video.addEventListener('pause', e => {
+      self.setState({ playing: false })
+    })
 
     if (idPattern) {
       id = idPattern[2]
